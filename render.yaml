@@ -1,0 +1,17 @@
+# Render.com blueprint — auto-configures the service when you deploy this repo
+services:
+  - type: web
+    name: shift-tracker-pro
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      # Data persistence: without these two, the free disk wipes on restart!
+      - key: GH_TOKEN      # your fine-grained GitHub token (Contents: Read & write)
+        sync: false
+      - key: GH_REPO       # e.g. yourname/shift-tracker-pro
+        sync: false

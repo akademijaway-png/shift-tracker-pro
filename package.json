@@ -1,0 +1,23 @@
+{
+  "name": "shift-tracker-server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Backend server for Shift Tracker Pro - accounts, sync, friends, realtime chat",
+  "dependencies": {
+    "express": "^5.2.1",
+    "web-push": "^3.6.7",
+    "ws": "^8.21.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  }
+}
