@@ -54,6 +54,7 @@ const GH_PATH = process.env.GH_PATH || 'backup/data.json';
 const GH_BRANCH = process.env.GH_BRANCH || 'main';
 const ghEnabled = !!(GH_TOKEN && GH_REPO);
 let ghSyncTimer = null, ghSha = null, ghSyncRunning = false;
+const ghState = { lastOk: null, lastError: null };
 
 async function ghApi(method, body) {
   const sep = method === 'GET' ? '?ref=' + GH_BRANCH : '';
@@ -110,11 +111,13 @@ async function ghPush() {
     }
     if (r.ok) {
       try { const j = await r.json(); if (j.content && j.content.sha) ghSha = j.content.sha; } catch (e) {}
+      ghState.lastOk = new Date().toISOString(); ghState.lastError = null;
       console.log('☁️ GitHub backup pushed');
     } else {
+      ghState.lastError = 'HTTP ' + r.status;
       console.log('☁️ GitHub backup failed:', r.status);
     }
-  } catch (e) { console.log('☁️ GitHub backup error:', e.message); }
+  } catch (e) { ghState.lastError = String(e.message || e); console.log('☁️ GitHub backup error:', e.message); }
   ghSyncRunning = false;
 }
 
@@ -145,6 +148,9 @@ loadDB();
 // bootstrap, AFTER any GitHub restore so backup keys win.
 async function bootstrap() {
   await ghRestore();
+  // No backup in the repo yet? Push one shortly after boot — this makes it
+  // verifiable right away AND protects fresh data written before any restart.
+  if (ghEnabled && !ghSha) setTimeout(ghPush, 20000);
   if (!db.vapid) {
     db.vapid = webpush.generateVAPIDKeys();
     saveDB();
@@ -241,7 +247,20 @@ app.use(express.json({ limit: '6mb' })); // large enough for chat photos (data-U
 // serve the app itself
 app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html', maxAge: 0 }));
 
-app.get('/api/health', (req, res) => res.json({ ok: true, users: db.users.length, time: nowISO() }));
+app.get('/api/health', (req, res) => res.json({
+  ok: true,
+  v: '1.2',
+  users: db.users.length,
+  time: nowISO(),
+  backup: {
+    enabled: ghEnabled,
+    tokenSet: !!GH_TOKEN,
+    repoSet: !!GH_REPO,
+    repo: GH_REPO || null,
+    lastOk: ghState.lastOk,
+    lastError: ghState.lastError
+  }
+}));
 
 // ── auth ──
 app.post('/api/auth/register', (req, res) => {
