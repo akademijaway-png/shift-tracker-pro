@@ -1199,7 +1199,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.8.0 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.8.1 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -1242,16 +1242,32 @@
           </div>
           <button class="btn btn-primary" onclick="saveWageFromSettings()">Save Wage</button>
           <div style="background: var(--slate-50); border-radius: 14px; padding: 12px 14px; margin-top: 12px;">
-            <p class="font-bold text-slate-900 text-sm mb-2">💶 Do you get double pay?</p>
+            <p class="font-bold text-slate-900 text-sm mb-2">💶 Your pay rules</p>
             <label class="flex items-center gap-2 mb-2" style="cursor: pointer;">
-              <input type="checkbox" id="settings-double-sunday" style="width: 20px; height: 20px; accent-color: var(--primary);" onchange="setDoubleSunday(this.checked)">
-              <span class="text-sm text-slate-900 font-semibold">Sundays pay double (×2) 🔴</span>
+              <input type="checkbox" id="settings-double-sunday" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" onchange="setDoubleSunday(this.checked)">
+              <span class="text-sm text-slate-900 font-semibold">🔴 <b>Sunday Work</b> — double time (×2)</span>
+            </label>
+            <label class="flex items-center gap-2 mb-2" style="cursor: pointer;">
+              <input type="checkbox" id="settings-double-holiday" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" onchange="setDoubleHoliday(this.checked)">
+              <span class="text-sm text-slate-900 font-semibold">🇲🇹 <b>Public Holiday</b> — normal pay + another paid day off; extra hours ×2</span>
+            </label>
+            <label class="flex items-center gap-2 mb-1" style="cursor: pointer;">
+              <span class="text-sm text-slate-900 font-semibold">🛌 <b>First Rest Day</b> pays ×1.5 — falls on:</span>
+              <select id="settings-rest1" class="input" style="width: auto; padding: 4px 8px; margin-left: auto;" onchange="setRestDay1Day(this.value)">
+                <option value="">— none</option><option value="1">Mon</option><option value="2">Tue</option><option value="3">Wed</option><option value="4">Thu</option><option value="5">Fri</option><option value="6">Sat</option><option value="0">Sun</option>
+              </select>
+            </label>
+            <label class="flex items-center gap-2 mb-2" style="cursor: pointer;">
+              <span class="text-sm text-slate-900 font-semibold">🛌🛌 <b>Second Rest Day</b> pays ×2 — falls on:</span>
+              <select id="settings-rest2" class="input" style="width: auto; padding: 4px 8px; margin-left: auto;" onchange="setRestDay2Day(this.value)">
+                <option value="">— none</option><option value="1">Mon</option><option value="2">Tue</option><option value="3">Wed</option><option value="4">Thu</option><option value="5">Fri</option><option value="6">Sat</option><option value="0">Sun</option>
+              </select>
             </label>
             <label class="flex items-center gap-2" style="cursor: pointer;">
-              <input type="checkbox" id="settings-double-holiday" style="width: 20px; height: 20px; accent-color: var(--primary);" onchange="setDoubleHoliday(this.checked)">
-              <span class="text-sm text-slate-900 font-semibold">Public holidays pay double (×2) 🇲🇹</span>
+              <input type="checkbox" id="settings-overtime" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" onchange="setOvertimeOn(this.checked)">
+              <span class="text-sm text-slate-900 font-semibold">⏰ <b>Overtime</b> — hours beyond 8h stack ×1.5</span>
             </label>
-            <p class="text-xs text-slate-400 mt-2">Untick what your workplace doesn't pay. Overtime ×1.5 (8h+/day) always stays.</p>
+            <p class="text-xs text-slate-400 mt-2">The engine applies these rules automatically to every shift &amp; the live dashboard. 🧮 Use Pay Calc (Home) for one-off what-if checks.</p>
           </div>
         </div>
       </div>
@@ -1527,7 +1543,10 @@
         hourlyWage: null,
         pauseDuringShift: false,
         doubleSunday: true,
-        doubleHoliday: true
+        doubleHoliday: true,
+        restDay1Day: '',
+        restDay2Day: '',
+        overtimeOn: true
       },
       friends: [],
       friendRequests: []
@@ -1587,7 +1606,7 @@
         DB.conversations = data.conversations || [];
         DB.messages = data.messages || [];
         DB.coworkers = data.coworkers || [];
-        DB.settings = Object.assign({ ringtone: 'classic', hourlyWage: null, pauseDuringShift: false, doubleSunday: true, doubleHoliday: true }, data.settings);
+        DB.settings = Object.assign({ ringtone: 'classic', hourlyWage: null, pauseDuringShift: false, doubleSunday: true, doubleHoliday: true, restDay1Day: '', restDay2Day: '', overtimeOn: true }, data.settings);
         DB.friends = data.friends || [];
         DB.friendRequests = data.friendRequests || [];
         // Every user is always shown as online
@@ -2135,14 +2154,45 @@
       return '€' + (amount || 0).toFixed(2);
     }
 
+    // Which pay rule applies to a given calendar day (v1.8.1) — driven by the
+    // ticks the user set at registration and can change anytime in Settings.
+    function payModeForDate(date) {
+      const s = DB.settings;
+      const dow = date.getDay();
+      const pick = v => (v !== undefined && v !== null && v !== '' && dow === +v);
+      if (pick(s.restDay2Day)) return { mode: 'rest2', mult: 2, label: '2nd rest day', emoji: '🛌🛌' };
+      if (pick(s.restDay1Day)) return { mode: 'rest1', mult: 1.5, label: '1st rest day', emoji: '🛌' };
+      if (getMaltaHolidayName(date) && s.doubleHoliday !== false) return { mode: 'holiday', label: 'Public holiday', emoji: '🇲🇹' };
+      if (dow === 0 && s.doubleSunday !== false) return { mode: 'sunday', mult: 2, label: 'Sunday', emoji: '🔴' };
+      return { mode: 'normal', mult: 1, label: 'Normal day', emoji: '' };
+    }
+
     function calculateShiftPay(durationSeconds, date, wage) {
       const secs = Math.max(0, Math.floor(durationSeconds || 0));
       const regularSeconds = Math.min(secs, REGULAR_SECONDS_PER_DAY);
       const overtimeSeconds = Math.max(0, secs - REGULAR_SECONDS_PER_DAY);
-      const multiplier = isDoublePayDay(date) ? DOUBLE_PAY_RATE : 1;
-      const pay = (wage || 0) * multiplier *
-        ((regularSeconds / 3600) + (overtimeSeconds / 3600) * OVERTIME_RATE);
-      return { pay, regularSeconds, overtimeSeconds, double: multiplier === DOUBLE_PAY_RATE };
+      const m = payModeForDate(date);
+      const w = wage || 0;
+      const regH = regularSeconds / 3600;
+      const otH = overtimeSeconds / 3600;
+      const otOn = DB.settings.overtimeOn !== false; // ×1.5 stacking, default ON
+      let pay;
+      if (m.mode === 'holiday') {
+        // Malta holiday rule: normal hours at normal pay + another paid day
+        // off (in lieu); hours beyond the normal day at double time (×2).
+        pay = w * regH + w * DOUBLE_PAY_RATE * otH;
+      } else {
+        const stack = otOn ? OVERTIME_RATE : 1;
+        pay = w * m.mult * (regH + otH * stack);
+      }
+      return {
+        pay,
+        regularSeconds,
+        overtimeSeconds,
+        double: m.mult === 2,                    // legacy badge flag (Sunday / 2nd rest day)
+        mode: m.mode, label: m.label, emoji: m.emoji, mult: m.mult,
+        lieu: m.mode === 'holiday' && regH > 0   // earned a paid day off in lieu
+      };
     }
 
     function calculateEarnings() {
@@ -2208,16 +2258,32 @@
           <input type="number" id="onboarding-wage" class="input" inputmode="decimal" min="0" step="0.01" placeholder="e.g. 12.50" onkeypress="if(event.key==='Enter')saveOnboardingWage()">
         </div>
         <div style="background: var(--slate-50); border-radius: 14px; padding: 14px; margin: 14px 0;">
-          <p class="font-bold text-slate-900 text-sm mb-2" style="text-align: center;">💶 Do you get DOUBLE pay?</p>
+          <p class="font-bold text-slate-900 text-sm mb-2" style="text-align: center;">💶 Your pay rules — tick what your workplace pays:</p>
           <label class="flex items-center gap-2 mb-2" style="cursor: pointer;">
-            <input type="checkbox" id="onboarding-double-sunday" checked style="width: 20px; height: 20px; accent-color: var(--primary);">
-            <span class="text-sm text-slate-900 font-semibold">Sundays pay double (×2) 🔴</span>
+            <input type="checkbox" id="onboarding-double-sunday" checked style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;">
+            <span class="text-sm text-slate-900 font-semibold">🔴 <b>Sunday Work</b> — double time (×2)</span>
+          </label>
+          <label class="flex items-center gap-2 mb-2" style="cursor: pointer;">
+            <input type="checkbox" id="onboarding-double-holiday" checked style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;">
+            <span class="text-sm text-slate-900 font-semibold">🇲🇹 <b>Public Holiday</b> — normal pay + <b>another paid day off</b>; extra hours ×2</span>
+          </label>
+          <label class="flex items-center gap-2 mb-1" style="cursor: pointer;">
+            <span class="text-sm text-slate-900 font-semibold">🛌 <b>First Rest Day</b> pays ×1.5 — falls on:</span>
+            <select id="onboarding-rest1" class="input" style="width: auto; padding: 4px 8px; margin-left: auto;">
+              <option value="">— none</option><option value="1">Mon</option><option value="2">Tue</option><option value="3">Wed</option><option value="4">Thu</option><option value="5">Fri</option><option value="6">Sat</option><option value="0">Sun</option>
+            </select>
+          </label>
+          <label class="flex items-center gap-2 mb-2" style="cursor: pointer;">
+            <span class="text-sm text-slate-900 font-semibold">🛌🛌 <b>Second Rest Day</b> pays ×2 — falls on:</span>
+            <select id="onboarding-rest2" class="input" style="width: auto; padding: 4px 8px; margin-left: auto;">
+              <option value="">— none</option><option value="1">Mon</option><option value="2">Tue</option><option value="3">Wed</option><option value="4">Thu</option><option value="5">Fri</option><option value="6">Sat</option><option value="0">Sun</option>
+            </select>
           </label>
           <label class="flex items-center gap-2" style="cursor: pointer;">
-            <input type="checkbox" id="onboarding-double-holiday" checked style="width: 20px; height: 20px; accent-color: var(--primary);">
-            <span class="text-sm text-slate-900 font-semibold">Public holidays pay double (×2) 🇲🇹</span>
+            <input type="checkbox" id="onboarding-overtime" checked style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;">
+            <span class="text-sm text-slate-900 font-semibold">⏰ <b>Overtime</b> — hours beyond 8h stack ×1.5</span>
           </label>
-          <p class="text-xs text-slate-400 mt-2" style="text-align: center;">Untick what your workplace doesn't pay — overtime (×1.5, 8h+/day) always stays.</p>
+          <p class="text-xs text-slate-400 mt-2" style="text-align: center;">The app applies these AUTOMATICALLY on every shift — change them anytime in Settings.</p>
         </div>
         <p id="onboarding-error" class="text-error text-center mb-4 font-semibold"></p>
         <button class="btn btn-primary" onclick="saveOnboardingWage()">Start Tracking 💶</button>
@@ -2241,6 +2307,12 @@
       const dHol = document.getElementById('onboarding-double-holiday');
       if (dSun) DB.settings.doubleSunday = dSun.checked;
       if (dHol) DB.settings.doubleHoliday = dHol.checked;
+      const r1 = document.getElementById('onboarding-rest1');
+      const r2 = document.getElementById('onboarding-rest2');
+      const ot = document.getElementById('onboarding-overtime');
+      if (r1) DB.settings.restDay1Day = r1.value;
+      if (r2) DB.settings.restDay2Day = r2.value;
+      if (ot) DB.settings.overtimeOn = ot.checked;
       saveData();
       closeModal();
       showToast('Hourly wage saved: ' + formatEuro(val) + '/h 🎉', 'success');
@@ -2273,7 +2345,32 @@
       saveData();
       refreshEarningsDashboard();
       renderCalendar();
-      showToast(on ? 'Public holidays pay double (×2) 💶' : 'Public holidays now pay your normal rate', 'success');
+      showToast(on ? 'Holidays: normal pay + extra day off; extra hours ×2 💶' : 'Public holidays now pay your normal rate', 'success');
+    }
+
+    function setRestDay1Day(v) {
+      DB.settings.restDay1Day = v;
+      saveData();
+      refreshEarningsDashboard();
+      renderCalendar();
+      const names = { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
+      showToast(v !== '' ? ('First rest day = ' + names[v] + ' (×1.5) 🛌') : 'First rest day turned off', 'success');
+    }
+
+    function setRestDay2Day(v) {
+      DB.settings.restDay2Day = v;
+      saveData();
+      refreshEarningsDashboard();
+      renderCalendar();
+      const names = { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
+      showToast(v !== '' ? ('Second rest day = ' + names[v] + ' (×2) 🛌🛌') : 'Second rest day turned off', 'success');
+    }
+
+    function setOvertimeOn(on) {
+      DB.settings.overtimeOn = !!on;
+      saveData();
+      refreshEarningsDashboard();
+      showToast(on ? 'Overtime beyond 8h pays ×1.5 ⏰' : 'Overtime stacking switched off', 'success');
     }
 
     // ==================== 🧮 SECURITY PAY CALCULATOR (v1.8.0) ====================
@@ -2676,10 +2773,14 @@
         if (hasShift) indicators += '<span class="indicator shift"></span>';
         if (hasNote) indicators += '<span class="indicator note"></span>';
         if (hasReminder) indicators += '<span class="indicator reminder"></span>';
-        const dblPay = isDoublePayDay(date);
+        const pm = payModeForDate(date);
+        const tip = pm.mode === 'sunday' ? ' — double pay ×2'
+          : pm.mode === 'holiday' ? ' — +paid day off, extra hours ×2'
+          : (pm.mode === 'rest1' || pm.mode === 'rest2') ? ' — ' + pm.label + ' ×' + pm.mult
+          : '';
         
         gridEl.innerHTML += `
-          <div class="calendar-day ${isToday ? 'today' : ''}${isSelected ? ' selected' : ''}${dayClass}"${holidayName ? ` title="${holidayName}${dblPay ? ' — double pay ×2' : ''}"` : (isSunday ? ` title="Sunday${dblPay ? ' — double pay ×2' : ''}"` : '')} onclick="selectDay(this, ${year}, ${month}, ${i})">
+          <div class="calendar-day ${isToday ? 'today' : ''}${isSelected ? ' selected' : ''}${dayClass}"${holidayName ? ` title="${holidayName}${tip}"` : ((isSunday || tip) ? ` title="${isSunday ? 'Sunday' : pm.label}${tip}"` : '')} onclick="selectDay(this, ${year}, ${month}, ${i})">
             ${holidayName ? '<span class="holiday-star">★</span>' : ''}${i}
             ${indicators ? '<div style="display:flex;gap:3px;position:absolute;bottom:4px;">' + indicators + '</div>' : ''}
           </div>
@@ -2734,14 +2835,23 @@
       
       let content = '';
 
-      // Malta holiday / Sunday banner (double pay days)
+      // Malta holiday / Sunday / rest-day banner (special pay days)
       const dayHolidayName = getMaltaHolidayName(date);
       const isDaySunday = date.getDay() === 0;
+      const dayPayMode = payModeForDate(date);
+      if (dayPayMode.mode === 'rest1' || dayPayMode.mode === 'rest2') {
+        content += `
+          <div class="p-3 rounded-xl mb-4 text-center" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white;">
+            <p class="font-bold">${dayPayMode.emoji} Scheduled rest day</p>
+            <p class="text-xs mt-1 opacity-90 font-semibold">${dayPayMode.mode === 'rest1' ? 'First rest day — time-and-a-half (×1.5) 💶' : 'Second rest day — double time (×2) 💶'}</p>
+          </div>
+        `;
+      }
       if (dayHolidayName) {
         content += `
           <div class="p-3 rounded-xl mb-4 text-center" style="background: linear-gradient(135deg, #ef4444, #f59e0b); color: white;">
             <p class="font-bold">🇲🇹 ${dayHolidayName}</p>
-            <p class="text-xs mt-1 opacity-90 font-semibold">${DB.settings.doubleHoliday !== false ? 'Public holiday — double pay day (×2) 💶' : 'Public holiday — your normal rate'}</p>
+            <p class="text-xs mt-1 opacity-90 font-semibold">${DB.settings.doubleHoliday !== false ? 'Public holiday — normal pay + 🏖️ extra paid day off; extra hours ×2 💶' : 'Public holiday — your normal rate'}</p>
           </div>
         `;
       } else if (isDaySunday) {
@@ -2761,7 +2871,7 @@
             <p class="text-sm font-semibold mb-1 opacity-90">Shift</p>
             <p class="text-lg font-mono font-bold">${formatTimeShort(shift.startTimestamp)} → ${formatTimeShort(shift.finishTimestamp)}</p>
             <p class="text-sm font-semibold mt-1 opacity-90">${formatDurationShort(Math.floor(shift.totalDuration / 1000))}</p>
-            ${wageNow > 0 ? `<p class="text-sm font-bold mt-2" style="background: rgba(255,255,255,0.22); border-radius: 10px; padding: 8px 12px;">💶 ${formatEuro(payInfo.pay)}${payInfo.double ? ' · ×2 double pay' : ''}${payInfo.overtimeSeconds > 0 ? ' · incl. overtime ×1.5' : ''}</p>` : ''}
+            ${wageNow > 0 ? `<p class="text-sm font-bold mt-2" style="background: rgba(255,255,255,0.22); border-radius: 10px; padding: 8px 12px;">💶 ${formatEuro(payInfo.pay)}${payInfo.mode && payInfo.mode !== 'normal' ? ' · ' + payInfo.emoji + ' ' + payInfo.label : ''}${payInfo.lieu ? ' · 🏖️ +1 paid day off' : ''}${payInfo.overtimeSeconds > 0 ? ' · incl. OT' : ''}</p>` : ''}
           </div>
         `;
       }
@@ -3091,6 +3201,12 @@
       if (dSunT) dSunT.checked = DB.settings.doubleSunday !== false;
       const dHolT = document.getElementById('settings-double-holiday');
       if (dHolT) dHolT.checked = DB.settings.doubleHoliday !== false;
+      const r1 = document.getElementById('settings-rest1');
+      if (r1) r1.value = DB.settings.restDay1Day || '';
+      const r2 = document.getElementById('settings-rest2');
+      if (r2) r2.value = DB.settings.restDay2Day || '';
+      const otT = document.getElementById('settings-overtime');
+      if (otT) otT.checked = DB.settings.overtimeOn !== false;
 
       const nameRow = document.getElementById('settings-name');
       if (nameRow) nameRow.textContent = DB.user.name;
@@ -3748,8 +3864,9 @@
       const wage = parseFloat(DB.settings.hourlyWage) || 0;
       const p = calculateShiftPay(secs, start, wage);
       const holidayName = getMaltaHolidayName(start);
+      const pm = payModeForDate(start);
       let badge = '';
-      if (isDoublePayDay(start)) badge = holidayName ? `<span class="pay-badge">★ ${holidayName} — double pay ×2</span>` : '<span class="pay-badge">Sunday — double pay ×2</span>';
+      if (pm.mode !== 'normal') badge = `<span class="pay-badge">${pm.emoji} ${holidayName || pm.label}${pm.mode === 'holiday' ? ' — +day off, extras ×2' : ' — ×' + pm.mult}</span>`;
       return `
         <p class="text-sm text-slate-500 font-semibold mb-1">Duration</p>
         <p class="font-mono font-bold text-xl text-primary mb-2">${formatDurationShort(secs)}</p>
@@ -3829,7 +3946,8 @@
             start: x.shift.startTimestamp,
             finish: x.shift.finishTimestamp,
             hours: secs / 3600,
-            dayType: holiday ? ('★ ' + holiday) : (x.date.getDay() === 0 ? 'Sunday' : 'Normal'),
+            dayType: holiday ? ('★ ' + holiday + (p.lieu ? ' (+day off)' : '')) : (p.mode && p.mode !== 'normal' ? (p.emoji + ' ' + p.label) : (x.date.getDay() === 0 ? 'Sunday' : 'Normal')),
+            multText: p.mode === 'holiday' ? '1× + 2×' : ('x' + (p.mode ? p.mult : (p.double ? 2 : 1))),
             double: p.double,
             overtimeHours: p.overtimeSeconds / 3600,
             pay: p.pay
@@ -3913,7 +4031,7 @@
           q(formatTimeShort(r.finish)),
           q(r.hours.toFixed(2)),
           q(r.dayType),
-          q(r.double ? 'x2' : 'x1'),
+          q(r.multText || (r.double ? 'x2' : 'x1')),
           q(r.overtimeHours.toFixed(2)),
           q(r.pay.toFixed(2))
         ].join(','));
@@ -3951,7 +4069,7 @@
           <td style="border-bottom:1px solid #e2e8f0; padding:6px 4px;">${r.date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</td>
           <td style="border-bottom:1px solid #e2e8f0; padding:6px 4px;">${formatTimeShort(r.start)} - ${formatTimeShort(r.finish)}</td>
           <td style="border-bottom:1px solid #e2e8f0; padding:6px 4px; text-align:right;">${r.hours.toFixed(2)}</td>
-          <td style="border-bottom:1px solid #e2e8f0; padding:6px 4px;">${r.dayType}${r.double ? ' x2' : ''}</td>
+          <td style="border-bottom:1px solid #e2e8f0; padding:6px 4px;">${r.dayType}${r.multText ? ' ' + r.multText : (r.double ? ' x2' : '')}</td>
           <td style="border-bottom:1px solid #e2e8f0; padding:6px 4px; text-align:right;">${r.overtimeHours > 0 ? r.overtimeHours.toFixed(2) : '-'}</td>
           <td style="border-bottom:1px solid #e2e8f0; padding:6px 4px; text-align:right;">EUR ${r.pay.toFixed(2)}</td>
         </tr>`).join('');
@@ -3980,7 +4098,7 @@
               <td style="border-top: 2px solid #0f172a; padding: 8px 4px; text-align: right; font-weight: bold;">EUR ${d.totals.pay.toFixed(2)}</td>
             </tr></tfoot>
           </table>
-          <p style="font-size: 10px; color: #64748b; margin-top: 16px;">Malta rules: Sundays &amp; public holidays paid double (x2) when enabled in Settings; overtime beyond 8h/day at x1.5. Generated ${new Date().toLocaleString('en-GB')} by Shift Tracker Pro.</p>
+          <p style="font-size: 10px; color: #64748b; margin-top: 16px;">Malta rules (your Settings): Sundays x2; public holiday = normal pay + a paid day off, extra hours x2; 1st rest day x1.5, 2nd rest day x2; overtime beyond 8h/day at x1.5. Generated ${new Date().toLocaleString('en-GB')} by Shift Tracker Pro.</p>
         </div>`;
       setTimeout(() => window.print(), 60);
     }
@@ -4145,7 +4263,7 @@
       if (wage <= 0 || !DB.user || !DB.user.currentShiftStart) return '';
       const secs = Math.max(0, Math.floor(elapsedMs / 1000));
       const p = calculateShiftPay(secs, new Date(DB.user.currentShiftStart), wage);
-      return '💶 Earned so far: ' + formatEuro(p.pay) + (p.double ? '  (×2 today!)' : '');
+      return '💶 Earned so far: ' + formatEuro(p.pay) + (p.mode && p.mode !== 'normal' ? '  (' + p.emoji + ' ' + p.label + ' today!)' : (p.double ? '  (×2 today!)' : ''));
     }
 
     // ==================== CHANGE DISPLAY NAME ====================
@@ -5604,5 +5722,5 @@ navigateTo = function (page) {
 bootOnlineLayer();
 
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2a62723ab874c3c',t:'MTc4NjYwNzY3OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2a6b914f81bb75e',t:'MTc4NjYxMzY1NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
