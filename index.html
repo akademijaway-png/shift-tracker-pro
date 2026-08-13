@@ -720,7 +720,10 @@
         <div class="card-padded">
           <div class="flex items-center justify-between mb-4">
             <h3 class="font-bold text-slate-900">My Earnings 💶</h3>
-            <span class="pay-badge" id="dash-wage-badge">Not set</span>
+            <div class="flex items-center gap-2">
+              <button class="btn btn-primary btn-sm" style="width: auto;" onclick="openPayCalculator()">🧮 Pay Calc</button>
+              <span class="pay-badge" id="dash-wage-badge">Not set</span>
+            </div>
           </div>
 
           <div id="dash-no-wage" class="text-center py-3">
@@ -1196,7 +1199,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.7.2 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.8.0 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -2271,6 +2274,184 @@
       refreshEarningsDashboard();
       renderCalendar();
       showToast(on ? 'Public holidays pay double (×2) 💶' : 'Public holidays now pay your normal rate', 'success');
+    }
+
+    // ==================== 🧮 SECURITY PAY CALCULATOR (v1.8.0) ====================
+    // Malta security pay rules with tick boxes — tick any combination, the
+    // math stacks them correctly. Normal working day reference = 8h.
+    const PAYCALC_NORMAL_HOURS = 8;
+
+    function securityPayCalc(o) {
+      // o: { hours, wage, sunday, holiday, firstRest, secondRest, overtime }
+      const wage = parseFloat(o.wage) || 0;
+      const hours = Math.max(0, parseFloat(o.hours) || 0);
+      const normalHours = Math.min(hours, PAYCALC_NORMAL_HOURS);
+      const excessHours = Math.max(0, hours - PAYCALC_NORMAL_HOURS);
+      const lines = [];
+      const benefits = [];
+      let total = 0;
+      const addLine = (label, h, mult, note) => {
+        if (h <= 0) return;
+        const rate = wage * mult;
+        const sub = rate * h;
+        total += sub;
+        lines.push({ label, hours: h, multiplier: mult, rate, subtotal: sub, note: note || '' });
+      };
+      const otNote = o.overtime ? '' : ' (tick ⏰ Overtime to stack ×1.5)';
+      let rule = 'normal';
+
+      if (o.secondRest) {
+        rule = 'secondRest';
+        addLine('Second rest day — double time (×2)', normalHours, 2);
+        addLine('Second rest day — extra hours (×2' + (o.overtime ? ' × 1.5 overtime = ×3' : '') + ')', excessHours, o.overtime ? 3 : 2);
+      } else if (o.firstRest) {
+        rule = 'firstRest';
+        addLine('First rest day — time-and-a-half (×1.5)', normalHours, 1.5);
+        addLine('First rest day — extra hours (×1.5' + (o.overtime ? ' × 1.5 overtime = ×2.25' : '') + ')', excessHours, o.overtime ? 2.25 : 1.5);
+      } else if (o.holiday && o.sunday) {
+        rule = 'holidaySunday';
+        addLine('Sunday + public holiday — double time (×2)', normalHours, 2);
+        addLine('Sunday + holiday — extra hours' + (o.overtime ? ' (×3 overtime)' : ' (×2)' + otNote), excessHours, o.overtime ? 3 : 2);
+        benefits.push('🏖️ Public holiday bonus: you also earn another paid day off (day in lieu)');
+      } else if (o.holiday) {
+        rule = 'holiday';
+        addLine('Public holiday — normal hours (normal pay)', normalHours, 1);
+        addLine('Public holiday — extra hours (double time ×2)', excessHours, 2);
+        benefits.push('🏖️ You also earn another paid day off (day in lieu)');
+      } else if (o.sunday) {
+        rule = 'sunday';
+        addLine('Sunday — double time (×2)', normalHours, 2);
+        addLine('Sunday — extra hours' + (o.overtime ? ' (×2 × 1.5 overtime = ×3)' : ' (×2)' + otNote), excessHours, o.overtime ? 3 : 2);
+      } else {
+        addLine('Normal hours', normalHours, 1);
+        addLine('Overtime (×1.5)', excessHours, 1.5);
+      }
+      return { lines, benefits, total, wage, hours, rule };
+    }
+
+    function togglePayCalcTick(which) {
+      const box = id => document.getElementById(id);
+      if (which === 'firstrest' && box('paycalc-firstrest').checked) box('paycalc-secondrest').checked = false;
+      if (which === 'secondrest' && box('paycalc-secondrest').checked) box('paycalc-firstrest').checked = false;
+      if (which === 'gov' && box('paycalc-gov').checked) box('paycalc-private').checked = false;
+      if (which === 'private' && box('paycalc-private').checked) box('paycalc-gov').checked = false;
+      updatePayCalcSelected();
+    }
+
+    function updatePayCalcSelected() {
+      const el = document.getElementById('paycalc-selected');
+      if (!el) return;
+      const on = id => { const b = document.getElementById(id); return b && b.checked; };
+      const picks = [];
+      if (on('paycalc-sunday')) picks.push('🔴 Sunday ×2');
+      if (on('paycalc-holiday')) picks.push('🇲🇹 Public Holiday');
+      if (on('paycalc-firstrest')) picks.push('🛌 Rest Day 1 ×1.5');
+      if (on('paycalc-secondrest')) picks.push('🛌🛌 Rest Day 2 ×2');
+      if (on('paycalc-overtime')) picks.push('⏰ Overtime');
+      if (on('paycalc-gov')) picks.push('🏛️ Government site');
+      if (on('paycalc-private')) picks.push('🏢 Private site');
+      el.innerHTML = picks.length
+        ? '✅ Selected: <b>' + picks.join('</b> · <b>') + '</b>'
+        : 'No special conditions ticked — normal day rate';
+    }
+
+    function payCalcAutoDate() {
+      const dEl = document.getElementById('paycalc-date');
+      if (!dEl || !dEl.value) return;
+      const d = new Date(dEl.value + 'T12:00:00');
+      if (isNaN(d)) return;
+      const sun = document.getElementById('paycalc-sunday');
+      const hol = document.getElementById('paycalc-holiday');
+      if (sun) sun.checked = d.getDay() === 0;
+      const hn = getMaltaHolidayName(d);
+      if (hol) hol.checked = !!hn;
+      const nameEl = document.getElementById('paycalc-holiday-name');
+      if (nameEl) nameEl.textContent = hn ? ('— 🇲🇹 ' + hn + ' (auto-detected!)') : '';
+      updatePayCalcSelected();
+    }
+
+    function openPayCalculator() {
+      const wage = parseFloat(DB.settings.hourlyWage) || 0;
+      if (wage <= 0) {
+        showToast('Set your hourly wage first 💶', 'error');
+        ensureWageOnboarding();
+        return;
+      }
+      const tick = (id, label) => `
+          <label class="flex items-center gap-2 mb-2" style="cursor: pointer;">
+            <input type="checkbox" id="${id}" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" onchange="togglePayCalcTick('${id.replace('paycalc-', '')}')">
+            <span class="text-sm text-slate-900 font-semibold">${label}</span>
+          </label>`;
+      openModal('🧮 Security Pay Calculator', `
+        <div class="input-group">
+          <label>Shift date</label>
+          <input type="date" id="paycalc-date" class="input" onchange="payCalcAutoDate()">
+        </div>
+        <div class="input-group">
+          <label>Hours worked (e.g. 8 or 9.5)</label>
+          <input type="number" id="paycalc-hours" class="input" inputmode="decimal" min="0" step="0.25" value="8" onkeypress="if(event.key==='Enter')runPayCalculator()">
+        </div>
+        <p class="text-xs text-slate-400 mb-2" style="text-align: center;">Your rate: <b>${formatEuro(wage)}/h</b> · 🇲🇹 ticks auto-check from the date — override as you like!</p>
+        <div style="background: var(--slate-50); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;">
+          ${tick('paycalc-sunday', '🔴 <b>Sunday Work</b> — double time (×2)')}
+          ${tick('paycalc-holiday', '🇲🇹 <b>Public Holiday</b> — normal hours at normal pay <b>+ another paid day off</b>; extra hours at <b>double time (×2)</b> <span id="paycalc-holiday-name" class="text-primary font-bold"></span>')}
+          ${tick('paycalc-firstrest', '🛌 <b>First Rest Day</b> — time-and-a-half (×1.5) all hours')}
+          ${tick('paycalc-secondrest', '🛌🛌 <b>Second Rest Day</b> — double time (×2) all hours')}
+          ${tick('paycalc-overtime', '⏰ <b>Overtime</b> — hours beyond 8h stack ×1.5 on top')}
+          ${tick('paycalc-gov', '🏛️ <b>Government Site</b> <span class="text-slate-400 font-normal">(info only)</span>')}
+          ${tick('paycalc-private', '🏢 <b>Private Site</b> <span class="text-slate-400 font-normal">(info only)</span>')}
+        </div>
+        <p id="paycalc-selected" class="text-xs font-semibold text-slate-500 mb-3" style="text-align: center;"></p>
+        <button class="btn btn-primary" onclick="runPayCalculator()">Calculate 💰</button>
+        <div id="paycalc-result" class="mt-4"></div>
+      `);
+      const dEl = document.getElementById('paycalc-date');
+      if (dEl) dEl.value = formatDateISO(new Date());
+      payCalcAutoDate();
+    }
+
+    function runPayCalculator() {
+      const res = document.getElementById('paycalc-result');
+      if (!res) return;
+      const on = id => { const b = document.getElementById(id); return b && b.checked; };
+      const hours = parseFloat(document.getElementById('paycalc-hours').value);
+      if (isNaN(hours) || hours <= 0) {
+        res.innerHTML = '<p class="text-error text-center font-semibold">Enter the hours you worked (e.g. 8 or 9.5)</p>';
+        return;
+      }
+      const r = securityPayCalc({
+        hours,
+        wage: parseFloat(DB.settings.hourlyWage) || 0,
+        sunday: on('paycalc-sunday'),
+        holiday: on('paycalc-holiday'),
+        firstRest: on('paycalc-firstrest'),
+        secondRest: on('paycalc-secondrest'),
+        overtime: on('paycalc-overtime')
+      });
+      const rows = r.lines.map(l => `
+          <tr>
+            <td style="padding: 6px 4px; border-bottom: 1px solid var(--slate-100);">${l.label}${l.note ? `<div class="text-xs text-slate-400">${l.note}</div>` : ''}</td>
+            <td style="padding: 6px 4px; border-bottom: 1px solid var(--slate-100); text-align: right; white-space: nowrap;">${l.hours}h</td>
+            <td style="padding: 6px 4px; border-bottom: 1px solid var(--slate-100); text-align: right; white-space: nowrap;">×${l.multiplier}</td>
+            <td style="padding: 6px 4px; border-bottom: 1px solid var(--slate-100); text-align: right; white-space: nowrap;" class="font-mono">${formatEuro(l.rate)}/h</td>
+            <td style="padding: 6px 4px; border-bottom: 1px solid var(--slate-100); text-align: right; white-space: nowrap;" class="font-mono font-bold">${formatEuro(l.subtotal)}</td>
+          </tr>`).join('');
+      const site = on('paycalc-gov') ? '🏛️ Government site' : (on('paycalc-private') ? '🏢 Private site' : '');
+      res.innerHTML = `
+        <div style="background: var(--slate-50); border-radius: 14px; padding: 12px; margin-top: 12px;">
+          ${site ? `<p class="text-xs font-bold text-slate-500 mb-2" style="text-align:center;">${site} — noted, no rate change applies</p>` : ''}
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <tr class="text-slate-400" style="font-size: 11px;">
+              <th style="text-align:left; padding: 4px;">What</th><th style="text-align:right; padding: 4px;">Hours</th><th style="text-align:right; padding: 4px;">Rate ×</th><th style="text-align:right; padding: 4px;">€/h</th><th style="text-align:right; padding: 4px;">Total</th>
+            </tr>
+            ${rows}
+          </table>
+          ${r.benefits.map(b => `<p class="text-xs font-bold mt-2" style="color: var(--success);">${b}</p>`).join('')}
+          <div style="text-align: center; margin-top: 12px; background: linear-gradient(135deg, var(--success), #16a34a); color: white; border-radius: 12px; padding: 10px;">
+            <p class="text-xs font-semibold opacity-90">TOTAL PAY FOR THIS SHIFT</p>
+            <p style="font-size: 26px;" class="font-mono font-bold">${formatEuro(r.total)}</p>
+          </div>
+        </div>`;
     }
 
     // ==================== REPEATING REMINDER ALARM ====================
@@ -5408,9 +5589,20 @@ document.addEventListener('visibilitychange', () => {
   if (currentPage === 'chat' && currentConversation && currentConversation.isFriendConv) refreshChat();
 });
 
+// ---------- instant directory & messages refresh on navigation (v2.8.0) ----------
+// Opening "Add Friends" or "Messages" should always show the freshest
+// roster — never a stale cache that looks like nobody registered.
+const BASE_navigateTo = navigateTo;
+navigateTo = function (page) {
+  BASE_navigateTo(page);
+  if (!ONLINE.active) return;
+  if (page === 'coworkers') refreshServerDirectory();
+  if (page === 'messages') refreshServerConversations(true);
+};
+
 // ---------- go! ----------
 bootOnlineLayer();
 
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2a5bab01ac0ee6e',t:'MTc4NjYwMzIzNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2a62723ab874c3c',t:'MTc4NjYwNzY3OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
