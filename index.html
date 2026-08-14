@@ -205,6 +205,17 @@
     .calendar-day .indicator.shift { background: var(--success); box-shadow: 0 0 6px var(--success); }
     .calendar-day .indicator.note { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
     .calendar-day .indicator.reminder { background: var(--purple); box-shadow: 0 0 6px var(--purple); }
+    .calendar-day .indicator.planned { background: #4a90d9; box-shadow: 0 0 6px #4a90d9; }
+    /* v1.9.0 — calendar arrows you can actually SEE (the old ones were white-on-white) */
+    .cal-nav-btn { background: var(--slate-100); border: 1px solid var(--slate-200); color: var(--slate-700); cursor: pointer; transition: all 0.2s; border-radius: 12px; min-width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; padding: 0 10px; }
+    .cal-nav-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+    .cal-nav-btn.year { font-size: 13px; opacity: 0.85; }
+    /* v1.9.0 — weekday picker chips for auto shifts */
+    .day-chip { border: 2px solid var(--slate-200); background: white; color: var(--slate-600); border-radius: 10px; padding: 9px 0; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; flex: 1 1 13%; min-width: 42px; font-family: inherit; }
+    .day-chip.selected { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border-color: transparent; }
+    /* v1.9.1 — quick-set time chips (☀️ 07–19 / 🌙 22–06 …) */
+    .time-chip { border: 2px solid var(--slate-200); background: white; color: var(--slate-600); border-radius: 10px; padding: 8px 6px; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; flex: 1 1 28%; min-width: 78px; font-family: inherit; }
+    .time-chip.selected { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border-color: transparent; }
     
     /* Message bubbles */
     .message-list { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
@@ -849,18 +860,16 @@
       <!-- Month Navigation -->
       <div class="card" style="margin: 16px;">
         <div class="card-padded">
-          <div class="flex items-center justify-between">
-            <button class="header-btn" onclick="changeMonth(-1)">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="15 18 9 12 15 6"></polyline>
-              </svg>
-            </button>
-            <h2 class="text-lg font-bold text-slate-900" id="calendar-month-year"></h2>
-            <button class="header-btn" onclick="changeMonth(1)">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </button>
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex gap-1">
+              <button class="cal-nav-btn year" onclick="changeMonth(-12)" title="Previous year" aria-label="Previous year">«</button>
+              <button class="cal-nav-btn" onclick="changeMonth(-1)" title="Previous month" aria-label="Previous month">‹</button>
+            </div>
+            <h2 class="text-lg font-bold text-slate-900 text-center" id="calendar-month-year" style="flex: 1;"></h2>
+            <div class="flex gap-1">
+              <button class="cal-nav-btn" onclick="changeMonth(1)" title="Next month" aria-label="Next month">›</button>
+              <button class="cal-nav-btn year" onclick="changeMonth(12)" title="Next year" aria-label="Next year">»</button>
+            </div>
           </div>
           <button class="btn btn-sm mt-4" style="background: var(--slate-100); color: var(--slate-700);" onclick="goToToday()">Today</button>
         </div>
@@ -889,6 +898,10 @@
         <div class="flex items-center gap-2">
           <span class="status-dot" style="background: #ef4444;"></span>
           <span class="text-xs text-white font-semibold">Sun / Holiday ×2 pay</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="status-dot" style="background: var(--primary);"></span>
+          <span class="text-xs text-white font-semibold">Auto shift</span>
         </div>
       </div>
       
@@ -932,13 +945,15 @@
       </div>
       
       <!-- Filters -->
-      <div class="flex gap-2 px-4 mt-4 overflow-x-auto">
-        <button class="btn btn-sm" style="background: var(--primary); color: white;" onclick="setHistoryFilter('today')" id="filter-today">Today</button>
-        <button class="btn btn-sm btn-ghost" onclick="setHistoryFilter('week')" id="filter-week">This Week</button>
-        <button class="btn btn-sm btn-ghost" onclick="setHistoryFilter('month')" id="filter-month">This Month</button>
-        <button class="btn btn-sm btn-ghost" onclick="setHistoryFilter('all')" id="filter-all">All Time</button>
-        <button class="btn btn-sm" style="background: rgba(74,144,217,0.12); color: var(--primary); border: 1px solid rgba(74,144,217,0.4); margin-left: auto; flex-shrink: 0;" onclick="openAddShiftModal()" id="btn-add-shift">＋ Add</button>
-        <button class="btn btn-sm" style="background: linear-gradient(135deg, var(--success), #16a34a); color: white; flex-shrink: 0;" onclick="openPayslipModal()" id="btn-payslip">📄 Payslip</button>
+      <div class="flex gap-2 px-4 mt-4" style="flex-wrap: wrap;">
+        <button class="btn btn-sm" style="background: var(--primary); color: white; flex: 1 1 auto;" onclick="setHistoryFilter('today')" id="filter-today">Today</button>
+        <button class="btn btn-sm btn-ghost" style="flex: 1 1 auto;" onclick="setHistoryFilter('week')" id="filter-week">This Week</button>
+        <button class="btn btn-sm btn-ghost" style="flex: 1 1 auto;" onclick="setHistoryFilter('month')" id="filter-month">This Month</button>
+        <button class="btn btn-sm btn-ghost" style="flex: 1 1 auto;" onclick="setHistoryFilter('all')" id="filter-all">All Time</button>
+      </div>
+      <div class="flex gap-2 px-4 mt-2" style="flex-wrap: wrap;">
+        <button class="btn btn-sm" style="background: rgba(74,144,217,0.12); color: var(--primary); border: 1px solid rgba(74,144,217,0.4); flex: 1 1 40%;" onclick="openAddShiftModal()" id="btn-add-shift">＋ Add Shift</button>
+        <button class="btn btn-sm" style="background: linear-gradient(135deg, var(--success), #16a34a); color: white; flex: 1 1 40%;" onclick="openPayslipModal()" id="btn-payslip">📄 Payslip</button>
       </div>
       
       <!-- Summary -->
@@ -1199,7 +1214,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.8.1 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.9.1 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -1269,6 +1284,19 @@
             </label>
             <p class="text-xs text-slate-400 mt-2">The engine applies these rules automatically to every shift &amp; the live dashboard. 🧮 Use Pay Calc (Home) for one-off what-if checks.</p>
           </div>
+        </div>
+      </div>
+
+      <!-- Auto Shifts: set a pattern once, the clock runs by itself (v1.9.0) -->
+      <div class="card mt-4">
+        <div class="card-padded">
+          <h3 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
+            <span style="font-size: 20px;">🔁</span>
+            Add Shift (auto)
+          </h3>
+          <p class="text-xs text-slate-500 mb-3">Work the same hours often? Set them once — the shifts appear in your calendar and the <b>clock starts &amp; stops by itself</b>. ⏱️</p>
+          <div id="auto-rules-list" class="mb-3"></div>
+          <button class="btn btn-primary" onclick="openAutoShiftModal('')">＋ Add Auto Shift</button>
         </div>
       </div>
 
@@ -1783,6 +1811,7 @@
       startReminderChecker();
       updateMessagesBadge();
       ensureWageOnboarding();
+      startAutoShiftTicker(); // 🔁 auto shifts: fill the calendar & run the clock (v1.9.0)
     }
 
     // ==================== SHIFTS ====================
@@ -2769,10 +2798,12 @@
         });
         const hasNote = DB.notes.some(n => n.date === dateStr);
         const hasReminder = DB.reminders.some(r => r.date === dateStr);
+        const hasPlanned = DB.shifts.some(s => s.auto && !s.finishTimestamp && s.date === dateStr);
         
         if (hasShift) indicators += '<span class="indicator shift"></span>';
         if (hasNote) indicators += '<span class="indicator note"></span>';
         if (hasReminder) indicators += '<span class="indicator reminder"></span>';
+        if (hasPlanned) indicators += '<span class="indicator planned"></span>';
         const pm = payModeForDate(date);
         const tip = pm.mode === 'sunday' ? ' — double pay ×2'
           : pm.mode === 'holiday' ? ' — +paid day off, extra hours ×2'
@@ -2827,6 +2858,9 @@
         return d.getDate() === date.getDate() && d.getMonth() === date.getMonth() && d.getFullYear() === date.getFullYear() && s.finishTimestamp;
       });
       
+      // Find a planned (not yet finished) auto shift for this day (v1.9.0)
+      const plannedShift = DB.shifts.find(s => s.auto && s.date === dateStr && !s.finishTimestamp);
+      
       // Find notes
       const notes = DB.notes.filter(n => n.date === dateStr);
       
@@ -2876,6 +2910,8 @@
         `;
       }
       
+      if (plannedShift) content += autoPlannedCardHTML(plannedShift);
+      
       if (reminders.length > 0) {
         reminders.forEach(reminder => {
           const isPast = new Date(`${reminder.date}T${reminder.time}`) < new Date();
@@ -2921,7 +2957,7 @@
         });
       }
       
-      if (!shift && reminders.length === 0 && notes.length === 0) {
+      if (!shift && !plannedShift && reminders.length === 0 && notes.length === 0) {
         content += '<p class="text-center text-slate-400 py-4">Tap the + button to add a note or reminder</p>';
       }
       
@@ -3239,6 +3275,9 @@
           </div>
         `).join('');
       }
+
+      // Auto shifts (Settings → Add Shift) — v1.9.0
+      renderAutoRulesList();
     }
 
     // ==================== HISTORY ====================
@@ -3980,8 +4019,8 @@
           </select>
         </div>
         <div class="p-4 rounded-xl mb-4" style="background: var(--slate-50);" id="payslip-summary"></div>
-        <div class="flex gap-3 mb-3">
-          <button class="btn btn-primary flex-1" onclick="downloadPayslipCSV()">⬇️ Download CSV</button>
+        <div class="flex gap-3 mb-3" style="flex-wrap: wrap;">
+          <button class="btn btn-primary flex-1" style="min-width: 140px;" onclick="downloadPayslipCSV()">⬇️ Download CSV</button>
           <button class="btn btn-secondary flex-1" onclick="printPayslip()">🖨️ Print / PDF</button>
         </div>
         <p class="text-xs text-slate-400 text-center">Tip: on your phone, choose “Save as PDF” in the print dialog. CSV opens in Excel / Sheets.</p>
@@ -4196,6 +4235,450 @@
       try { localStorage.removeItem('shiftTrackerDB'); } catch (e) {}
       try { localStorage.removeItem('st_token'); } catch (e) {}
       setTimeout(() => window.location.reload(), 400);
+    }
+
+    // ==================== 🔁 AUTO SHIFTS (Settings → Add Shift) — v1.9.0 ====================
+    // A "rule" says: which weekdays, start time, end time, and how long to repeat
+    // (this week / until the end of this month / every week). Rules live inside
+    // DB.settings.autoRules, so they travel to the cloud with the rest of the state.
+    // ensureAutoShifts() materialises real shift entries up to 35 days ahead, and the
+    // 15-second ticker starts & finishes today's shift by itself at the right times.
+    // Generated shifts are normal entries: they can be edited or removed any time.
+
+    const AUTO_HORIZON_DAYS = 35;
+    const AUTO_DAY_ORDER = [1, 2, 3, 4, 5, 6, 0]; // Monday first (Malta convention)
+    const AUTO_DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    function autoRules() {
+      if (!DB.settings) return [];
+      if (!Array.isArray(DB.settings.autoRules)) DB.settings.autoRules = [];
+      return DB.settings.autoRules;
+    }
+
+    function startOfTodayMs() {
+      const t = new Date();
+      return new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime();
+    }
+
+    function autoRuleUntil(repeat) {
+      const now = new Date();
+      if (repeat === 'week') { // through the end of the current Mon–Sun week
+        const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+        return new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 7).getTime() - 1;
+      }
+      if (repeat === 'month') { // through the last day of the current month
+        return new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime() - 1;
+      }
+      return null; // 'weekly' → keeps going
+    }
+
+    function schedTimesFor(dateObj, startHHMM, endHHMM) {
+      const sh = parseInt(startHHMM.split(':')[0], 10), sm = parseInt(startHHMM.split(':')[1], 10);
+      const eh = parseInt(endHHMM.split(':')[0], 10), em = parseInt(endHHMM.split(':')[1], 10);
+      const s = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), sh, sm, 0, 0);
+      const e = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), eh, em, 0, 0);
+      if (e.getTime() <= s.getTime()) e.setDate(e.getDate() + 1); // overnight shifts cross midnight
+      return [s, e];
+    }
+
+    function autoTime(iso) {
+      const d = new Date(iso);
+      return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    }
+
+    // True when `dateStr` already has any (other) shift on it — manual or auto.
+    function dateHasOtherShift(dateStr, ignoreId) {
+      return DB.shifts.some(s => {
+        if (s.id === ignoreId) return false;
+        if (s.auto && s.date === dateStr && !s.startTimestamp && !s.finishTimestamp) return true;
+        if (!s.startTimestamp) return false;
+        return formatDateISO(new Date(s.startTimestamp)) === dateStr;
+      });
+    }
+
+    function materializeRuleForDate(rule, dayDate) {
+      const dateStr = formatDateISO(dayDate);
+      if (DB.shifts.some(s => s.autoKey === rule.id + '|' + dateStr)) return false; // already made
+      if (dateHasOtherShift(dateStr, null)) return false; // respect existing shifts that day
+      const se = schedTimesFor(dayDate, rule.start, rule.end);
+      const entry = {
+        id: generateId(),
+        userId: DB.user.id,
+        auto: true,
+        autoKey: rule.id + '|' + dateStr,
+        date: dateStr,
+        schedStart: se[0].toISOString(),
+        schedEnd: se[1].toISOString(),
+        startTimestamp: null,
+        finishTimestamp: null,
+        totalDuration: null
+      };
+      DB.shifts.push(entry);
+      tickAutoEntry(entry); // if it should already be running/finished, settle it now
+      return DB.shifts.indexOf(entry) !== -1; // (tick may cancel it on a clash)
+    }
+
+    function ensureAutoShifts() {
+      if (!DB.user || !DB.settings) return false;
+      const rules = autoRules();
+      // Rules whose window has ended are pruned quietly
+      const kept = rules.filter(r => !r.until || r.until >= startOfTodayMs());
+      if (kept.length !== rules.length) { DB.settings.autoRules = kept; saveData(); }
+      let changed = false;
+      const today = new Date();
+      for (let off = 0; off < AUTO_HORIZON_DAYS; off++) {
+        const dayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + off);
+        kept.forEach(r => {
+          if (r.enabled === false) return;
+          if (r.until && dayDate.getTime() > r.until) return;
+          if ((r.days || []).indexOf(dayDate.getDay()) === -1) return;
+          if (materializeRuleForDate(r, dayDate)) changed = true;
+        });
+      }
+      if (changed) { saveData(); try { renderCalendar(); } catch (e) {} }
+      return changed;
+    }
+
+    // One entry's state machine: planned → (start time) running → (end time) finished.
+    function tickAutoEntry(entry) {
+      if (entry.finishTimestamp || !entry.auto) return;
+      const now = Date.now();
+      const sMs = new Date(entry.schedStart).getTime();
+      const eMs = new Date(entry.schedEnd).getTime();
+      if (!entry.startTimestamp) {
+        if (now >= eMs) {
+          // The whole scheduled window closed without the clock ever running.
+          if (dateHasOtherShift(entry.date, entry.id)) {
+            // Another (e.g. manual) shift covered that day — drop the plan quietly.
+            DB.shifts = DB.shifts.filter(x => x.id !== entry.id);
+            return;
+          }
+          // Otherwise the shift simply happened exactly on schedule.
+          entry.startTimestamp = entry.schedStart;
+          entry.finishTimestamp = entry.schedEnd;
+          entry.totalDuration = eMs - sMs;
+        } else if (now >= sMs) {
+          if (DB.user.workingStatus === 'WORKING' && DB.user.currentShiftId && DB.user.currentShiftId !== entry.id) return; // another shift is live
+          if (dateHasOtherShift(entry.date, entry.id)) { DB.shifts = DB.shifts.filter(x => x.id !== entry.id); return; }
+          entry.startTimestamp = entry.schedStart;
+          DB.user.workingStatus = 'WORKING';
+          DB.user.currentShiftId = entry.id;
+          DB.user.currentShiftStart = entry.schedStart;
+          showToast('🔁 Auto shift started at ' + autoTime(entry.schedStart) + ' — the clock is ticking ⏱️', 'success');
+        }
+      } else if (now >= eMs) {
+        entry.finishTimestamp = entry.schedEnd;
+        entry.totalDuration = eMs - new Date(entry.startTimestamp).getTime();
+        if (DB.user.currentShiftId === entry.id) {
+          DB.user.workingStatus = 'NOT_WORKING';
+          DB.user.currentShiftId = null;
+          DB.user.currentShiftStart = null;
+        }
+        showToast('✅ Auto shift finished at ' + autoTime(entry.schedEnd) + ' 🎉', 'success');
+      }
+    }
+
+    function autoShiftTick() {
+      if (!DB.user || !DB.shifts) return;
+      let changed = false;
+      DB.shifts.slice().forEach(s => {
+        if (!s.auto || s.finishTimestamp) return;
+        const before = (s.startTimestamp || '') + '|' + (DB.user.currentShiftId || '') + '|' + DB.shifts.length;
+        tickAutoEntry(s);
+        const after = (s.startTimestamp || '') + '|' + (DB.user.currentShiftId || '') + '|' + DB.shifts.length;
+        if (before !== after) changed = true;
+      });
+      if (changed) {
+        saveData();
+        try { refreshHome(); } catch (e) {}
+        try { renderCalendar(); } catch (e) {}
+        if (selectedCalendarDate) { try { updateSelectedDay(selectedCalendarDate); } catch (e) {} }
+        try { renderAutoRulesList(); } catch (e) {}
+      }
+    }
+
+    let autoShiftInterval = null;
+    function startAutoShiftTicker() {
+      try { ensureAutoShifts(); autoShiftTick(); } catch (e) {}
+      if (autoShiftInterval) clearInterval(autoShiftInterval);
+      autoShiftInterval = setInterval(() => {
+        try { ensureAutoShifts(); autoShiftTick(); } catch (e) {}
+      }, 15000);
+    }
+
+    // ---------------- UI: rules list, add/edit/delete ----------------
+    function humanizeAutoDays(days) {
+      if (!days || !days.length) return '—';
+      const sorted = AUTO_DAY_ORDER.filter(d => days.indexOf(d) !== -1);
+      if (sorted.length === 7) return 'Every day';
+      if (sorted.join(',') === '1,2,3,4,5') return 'Mon–Fri';
+      return sorted.map(d => AUTO_DAY_NAMES[d]).join(', ');
+    }
+
+    function autoRepeatLabel(r) {
+      if (r.repeat === 'month') return 'until the end of this month';
+      if (r.repeat === 'week') return 'this week only';
+      return 'every week';
+    }
+
+    function renderAutoRulesList() {
+      const box = document.getElementById('auto-rules-list');
+      if (!box || !DB.user) return;
+      const rules = autoRules();
+      if (!rules.length) {
+        box.innerHTML = '<p class="text-center text-slate-400 py-2 text-sm">No automatic shifts yet</p>';
+        return;
+      }
+      box.innerHTML = rules.map(r => `
+        <div class="p-3 rounded-xl mb-2" style="background: var(--slate-50); border: 1px solid var(--slate-200);">
+          <div class="flex items-center gap-2">
+            <span style="font-size: 20px;">🔁</span>
+            <div class="flex-1">
+              <p class="font-semibold text-slate-900 text-sm">${humanizeAutoDays(r.days)} · ${r.start} → ${r.end}</p>
+              <p class="text-xs text-slate-500">${autoRepeatLabel(r)}${r.enabled === false ? ' · ⏸ paused' : ''}</p>
+            </div>
+            <input type="checkbox" title="On / off" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" ${r.enabled !== false ? 'checked' : ''} onchange="toggleAutoRule('${r.id}', this.checked)">
+            <button title="Edit" aria-label="Edit" onclick="openAutoShiftModal('${r.id}')" style="background: var(--slate-100); border: none; border-radius: 8px; padding: 8px; cursor: pointer; color: var(--slate-600); font-size: 14px;">✏️</button>
+            <button title="Delete" aria-label="Delete" onclick="askDeleteAutoRule('${r.id}')" style="background: none; border: none; border-radius: 8px; padding: 8px; cursor: pointer; color: var(--error); font-size: 14px;">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleAutoRule(id, on) {
+      const r = autoRules().find(x => x.id === id);
+      if (!r) return;
+      r.enabled = !!on;
+      if (!r.enabled) {
+        // paused: remove its not-yet-started planned days
+        DB.shifts = DB.shifts.filter(s => !(s.auto && !s.startTimestamp && !s.finishTimestamp && s.autoKey && s.autoKey.indexOf(id + '|') === 0));
+      }
+      saveData();
+      ensureAutoShifts();
+      renderAutoRulesList();
+      try { renderCalendar(); } catch (e) {}
+      showToast(r.enabled ? '🔁 Auto shift switched on ✅' : '⏸ Auto shift paused (future planned days removed)', 'success');
+    }
+
+    function askDeleteAutoRule(id) {
+      const r = autoRules().find(x => x.id === id);
+      if (!r) return;
+      openModal('Delete this auto shift? 🔁', `
+        <p class="text-muted mb-4 text-center"><b>${humanizeAutoDays(r.days)} · ${r.start} → ${r.end}</b><br>Future planned days are removed. Shifts that already ran stay in your history.</p>
+        <div class="flex gap-3">
+          <button class="btn btn-secondary flex-1" onclick="closeModal()">Keep it</button>
+          <button class="btn flex-1" style="background: var(--error); color: white;" onclick="confirmDeleteAutoRule('${id}')">Delete</button>
+        </div>
+      `);
+    }
+
+    function confirmDeleteAutoRule(id) {
+      DB.settings.autoRules = autoRules().filter(x => x.id !== id);
+      DB.shifts = DB.shifts.filter(s => !(s.auto && !s.startTimestamp && !s.finishTimestamp && s.autoKey && s.autoKey.indexOf(id + '|') === 0));
+      saveData();
+      closeModal();
+      renderAutoRulesList();
+      try { renderCalendar(); } catch (e) {}
+      if (selectedCalendarDate) { try { updateSelectedDay(selectedCalendarDate); } catch (e) {} }
+      showToast('🔁 Auto shift deleted', 'success');
+    }
+
+    function openAutoShiftModal(ruleId) {
+      if (!DB.user) return;
+      const editing = ruleId ? autoRules().find(r => r.id === ruleId) : null;
+      const selDays = editing && editing.days ? editing.days.slice() : [1, 2, 3, 4, 5];
+      const repeat = editing ? (editing.repeat || 'weekly') : 'weekly';
+      openModal(editing ? 'Edit Auto Shift 🔁' : 'Add Shift (auto) 🔁', `
+        <p class="text-muted mb-4 text-center">Pick the days &amp; times once — the app fills your calendar and <b>starts the clock by itself</b>. ⏱️</p>
+        <div class="input-group">
+          <label>Which days?</label>
+          <div class="flex gap-1" style="flex-wrap: wrap;">
+            ${AUTO_DAY_ORDER.map(d => `<button type="button" class="day-chip${selDays.indexOf(d) !== -1 ? ' selected' : ''}" data-dow="${d}" onclick="this.classList.toggle('selected')">${AUTO_DAY_NAMES[d]}</button>`).join('')}
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Times — tap a quick set, or set your own ⏰</label>
+          <div class="flex gap-1" style="flex-wrap: wrap;">
+            <button type="button" class="time-chip" data-s="07:00" data-e="19:00" onclick="presetAutoTimes(this)">☀️ 07–19</button>
+            <button type="button" class="time-chip" data-s="08:00" data-e="16:00" onclick="presetAutoTimes(this)">☀️ 08–16</button>
+            <button type="button" class="time-chip" data-s="08:00" data-e="17:00" onclick="presetAutoTimes(this)">☀️ 08–17</button>
+            <button type="button" class="time-chip" data-s="19:00" data-e="07:00" onclick="presetAutoTimes(this)">🌙 19–07</button>
+            <button type="button" class="time-chip" data-s="22:00" data-e="06:00" onclick="presetAutoTimes(this)">🌙 22–06</button>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <div class="input-group flex-1">
+            <label>Starts ⏰</label>
+            <input type="time" id="auto-start" class="input" value="${editing ? editing.start : '08:00'}">
+          </div>
+          <div class="input-group flex-1">
+            <label>Ends ⏰</label>
+            <input type="time" id="auto-end" class="input" value="${editing ? editing.end : '16:00'}">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Repeat</label>
+          <select id="auto-repeat" class="input">
+            <option value="weekly"${repeat === 'weekly' ? ' selected' : ''}>Every week — keeps going</option>
+            <option value="week"${repeat === 'week' ? ' selected' : ''}>This week only</option>
+            <option value="month"${repeat === 'month' ? ' selected' : ''}>Until the end of this month</option>
+          </select>
+        </div>
+        <p class="text-xs text-slate-400 mb-3">💡 Overnight works too (e.g. 22:00 → 06:00). Each added shift can still be edited or removed from its calendar day.</p>
+        <p id="auto-error" class="text-error text-center font-semibold"></p>
+        <div class="flex gap-3" style="flex-wrap: wrap;">
+          <button class="btn btn-secondary flex-1" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-success flex-1" onclick="saveAutoShift('${editing ? editing.id : ''}')">${editing ? 'Save Changes' : 'Add Auto Shift'}</button>
+        </div>
+      `);
+    }
+
+    // Quick-set chips: ☀️ 07–19, 🌙 19–07… (v1.9.1 — never mixed up with weekday chips)
+    function presetAutoTimes(btn) {
+      const s = document.getElementById('auto-start') || document.getElementById('auto-entry-start');
+      const e = document.getElementById('auto-end') || document.getElementById('auto-entry-end');
+      if (s) s.value = btn.dataset.s;
+      if (e) e.value = btn.dataset.e;
+      document.querySelectorAll('.time-chip').forEach(c => c.classList.toggle('selected', c === btn));
+    }
+
+    function saveAutoShift(ruleId) {
+      if (!DB.user) return;
+      const errEl = document.getElementById('auto-error');
+      const fail = m => { if (errEl) errEl.textContent = m; };
+      const days = [];
+      document.querySelectorAll('.day-chip.selected').forEach(c => days.push(parseInt(c.dataset.dow, 10)));
+      const start = (document.getElementById('auto-start') || {}).value;
+      const end = (document.getElementById('auto-end') || {}).value;
+      const repeat = (document.getElementById('auto-repeat') || {}).value || 'weekly';
+      if (!days.length) return fail('Pick at least one day 🙂');
+      if (!start || !end) return fail('Set both the start and end times');
+      if (start === end) return fail('Start and end cannot be the same time');
+      if (ruleId) {
+        const r = autoRules().find(x => x.id === ruleId);
+        if (!r) return fail('Auto shift not found — please reopen it');
+        r.days = days; r.start = start; r.end = end; r.repeat = repeat;
+        r.until = autoRuleUntil(repeat); r.enabled = true;
+        // regenerate this rule's not-yet-started days with the new pattern
+        DB.shifts = DB.shifts.filter(s => !(s.auto && !s.startTimestamp && !s.finishTimestamp && s.autoKey && s.autoKey.indexOf(ruleId + '|') === 0));
+      } else {
+        autoRules().push({
+          id: generateId(), days: days, start: start, end: end,
+          repeat: repeat, until: autoRuleUntil(repeat), enabled: true, createdAt: Date.now()
+        });
+      }
+      saveData();
+      ensureAutoShifts();
+      closeModal();
+      refreshSettings();
+      try { renderCalendar(); } catch (e) {}
+      if (selectedCalendarDate) { try { updateSelectedDay(selectedCalendarDate); } catch (e) {} }
+      const n = DB.shifts.filter(s => s.auto).length;
+      showToast('🔁 Saved! ' + n + ' shift' + (n === 1 ? '' : 's') + ' on the calendar — the clock runs by itself ⏱️', 'success');
+    }
+
+    // ---------------- one generated day: edit times / remove ----------------
+    function openAutoEntryModal(id) {
+      const s = DB.shifts.find(x => x.id === id);
+      if (!s || s.finishTimestamp) return;
+      openModal('Edit this auto shift ✏️', `
+        <p class="text-muted mb-4 text-center">${formatDate(new Date(s.schedStart))}</p>
+        <div class="flex gap-1 mb-2" style="flex-wrap: wrap;">
+          <button type="button" class="time-chip" data-s="07:00" data-e="19:00" onclick="presetAutoTimes(this)">☀️ 07–19</button>
+          <button type="button" class="time-chip" data-s="08:00" data-e="16:00" onclick="presetAutoTimes(this)">☀️ 08–16</button>
+          <button type="button" class="time-chip" data-s="08:00" data-e="17:00" onclick="presetAutoTimes(this)">☀️ 08–17</button>
+          <button type="button" class="time-chip" data-s="19:00" data-e="07:00" onclick="presetAutoTimes(this)">🌙 19–07</button>
+          <button type="button" class="time-chip" data-s="22:00" data-e="06:00" onclick="presetAutoTimes(this)">🌙 22–06</button>
+        </div>
+        <div class="flex gap-3">
+          <div class="input-group flex-1">
+            <label>Starts ⏰</label>
+            <input type="time" id="auto-entry-start" class="input" value="${autoTime(s.schedStart)}">
+          </div>
+          <div class="input-group flex-1">
+            <label>Ends ⏰</label>
+            <input type="time" id="auto-entry-end" class="input" value="${autoTime(s.schedEnd)}">
+          </div>
+        </div>
+        <p class="text-xs text-slate-400 mb-3">Only this day changes — the weekly pattern stays as it is.</p>
+        <p id="auto-entry-error" class="text-error text-center font-semibold"></p>
+        <div class="flex gap-3" style="flex-wrap: wrap;">
+          <button class="btn btn-secondary flex-1" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-success flex-1" onclick="saveAutoEntry('${id}')">Save Times</button>
+        </div>
+      `);
+    }
+
+    function saveAutoEntry(id) {
+      const s = DB.shifts.find(x => x.id === id && x.auto);
+      if (!s) { closeModal(); return; }
+      const errEl = document.getElementById('auto-entry-error');
+      const start = (document.getElementById('auto-entry-start') || {}).value;
+      const end = (document.getElementById('auto-entry-end') || {}).value;
+      if (!start || !end) { if (errEl) errEl.textContent = 'Set both the start and end times'; return; }
+      if (start === end) { if (errEl) errEl.textContent = 'Start and end cannot be the same time'; return; }
+      const day = new Date(s.schedStart);
+      const se = schedTimesFor(day, start, end);
+      s.schedStart = se[0].toISOString();
+      s.schedEnd = se[1].toISOString();
+      if (s.startTimestamp) {
+        // already running — move the live clock to the new start time (or back to planned)
+        if (se[0].getTime() > Date.now()) {
+          s.startTimestamp = null;
+          if (DB.user.currentShiftId === s.id) {
+            DB.user.workingStatus = 'NOT_WORKING';
+            DB.user.currentShiftId = null;
+            DB.user.currentShiftStart = null;
+          }
+        } else {
+          s.startTimestamp = s.schedStart;
+          if (DB.user.currentShiftId === s.id) DB.user.currentShiftStart = s.schedStart;
+        }
+      }
+      tickAutoEntry(s);
+      saveData();
+      closeModal();
+      try { renderCalendar(); } catch (e) {}
+      if (selectedCalendarDate) { try { updateSelectedDay(selectedCalendarDate); } catch (e) {} }
+      try { refreshHome(); } catch (e) {}
+      showToast('⏰ Shift times updated', 'success');
+    }
+
+    function removeAutoEntry(id) {
+      const s = DB.shifts.find(x => x.id === id && x.auto);
+      if (!s) return;
+      if (DB.user.currentShiftId === s.id) {
+        DB.user.workingStatus = 'NOT_WORKING';
+        DB.user.currentShiftId = null;
+        DB.user.currentShiftStart = null;
+      }
+      DB.shifts = DB.shifts.filter(x => x.id !== id);
+      saveData();
+      try { renderCalendar(); } catch (e) {}
+      if (selectedCalendarDate) { try { updateSelectedDay(selectedCalendarDate); } catch (e) {} }
+      try { refreshHome(); } catch (e) {}
+      showToast('🗑 Shift removed for ' + formatDate(new Date(s.schedStart)), 'success');
+    }
+
+    function autoPlannedCardHTML(ps) {
+      const running = DB.user && DB.user.currentShiftId === ps.id;
+      const overnight = new Date(ps.schedStart).getDate() !== new Date(ps.schedEnd).getDate();
+      const status = running
+        ? '⏱️ The clock is ticking — it stops by itself at ' + autoTime(ps.schedEnd)
+        : (Date.now() >= new Date(ps.schedStart).getTime()
+            ? '⏳ Starting in a moment…'
+            : '🕒 The clock starts by itself at ' + autoTime(ps.schedStart));
+      return `
+        <div class="p-4 rounded-xl mb-4" style="background: linear-gradient(135deg, var(--primary), var(--purple)); color: white;">
+          <p class="text-sm font-semibold mb-1 opacity-90">🔁 Auto shift ${running ? '(on duty now)' : '(planned)'}</p>
+          <p class="text-lg font-mono font-bold">${autoTime(ps.schedStart)} → ${autoTime(ps.schedEnd)}${overnight ? ' <span class="text-xs opacity-80">+1 night</span>' : ''}</p>
+          <p class="text-xs mt-1 opacity-90 font-semibold">${status}</p>
+          <div class="flex gap-2 mt-2" style="flex-wrap: wrap;">
+            <button class="btn btn-sm flex-1" style="background: rgba(255,255,255,0.22); color: white; min-width: 110px;" onclick="openAutoEntryModal('${ps.id}')">✏️ Edit times</button>
+            <button class="btn btn-sm flex-1" style="background: rgba(0,0,0,0.18); color: white; min-width: 110px;" onclick="removeAutoEntry('${ps.id}')">🗑️ Not working</button>
+          </div>
+        </div>
+      `;
     }
 
     // ==================== ADD A PAST SHIFT ====================
@@ -5722,5 +6205,5 @@ navigateTo = function (page) {
 bootOnlineLayer();
 
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2a6b914f81bb75e',t:'MTc4NjYxMzY1NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2b21b7fac9acd75',t:'MTc4NjczMzAzMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
