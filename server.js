@@ -276,7 +276,7 @@ app.get(['/manifest.json', '/sw.js', '/icons/icon-192.png', '/icons/icon-512.png
 
 app.get('/api/health', (req, res) => res.json({
   ok: true,
-  v: '1.4',
+  v: '1.6',
   users: db.users.length,
   time: nowISO(),
   backup: {
@@ -304,7 +304,7 @@ app.post('/api/auth/register', (req, res) => {
   const { salt, hash } = hashPassword(password);
   const user = { id: id(), name, email, passHash: hash, salt, hourlyWage: null, avatar: null, createdAt: nowISO(), lastSeen: null };
   db.users.push(user);
-  db.states[user.id] = { shifts: [], notes: [], reminders: [], settings: {} };
+  db.states[user.id] = { shifts: [], notes: [], reminders: [], payslips: [], settings: {} };
 
   const token = crypto.randomBytes(24).toString('hex');
   db.sessions[token] = { userId: user.id, createdAt: nowISO() };
@@ -317,8 +317,11 @@ app.post('/api/auth/login', (req, res) => {
   const email = String((req.body || {}).email || '').trim().toLowerCase();
   const password = String((req.body || {}).password || '');
   const user = db.users.find(u => u.email === email);
-  if (!user || !verifyPassword(password, user.salt, user.passHash)) {
-    return res.status(401).json({ error: 'Wrong email or password' });
+  if (!user) {
+    return res.status(404).json({ error: 'No account with this email yet — tap Create Account ✨', code: 'NO_ACCOUNT' });
+  }
+  if (!verifyPassword(password, user.salt, user.passHash)) {
+    return res.status(401).json({ error: 'Wrong password for this email 🔑 — try again', code: 'BAD_PASSWORD' });
   }
   const token = crypto.randomBytes(24).toString('hex');
   db.sessions[token] = { userId: user.id, createdAt: nowISO() };
@@ -394,10 +397,19 @@ app.put('/api/state', auth, (req, res) => {
   const s = req.body && req.body.state;
   if (!s || typeof s !== 'object') return res.status(400).json({ error: 'Bad state' });
   const cur = db.states[req.user.id] || {};
+  const cleanPayslips = Array.isArray(s.payslips) ? s.payslips.slice(0, 20).map(p => ({
+    id: String((p && p.id) || ''),
+    name: String((p && p.name) || 'payslip').slice(0, 120),
+    type: p && p.type === 'pdf' ? 'pdf' : 'image',
+    month: String((p && p.month) || '').slice(0, 7),
+    createdAt: String((p && p.createdAt) || ''),
+    dataUrl: typeof (p && p.dataUrl) === 'string' && p.dataUrl.length <= 500000 ? p.dataUrl : ''
+  })).filter(p => p.id && p.dataUrl) : null;
   db.states[req.user.id] = {
     shifts: Array.isArray(s.shifts) ? s.shifts : (cur.shifts || []),
     notes: Array.isArray(s.notes) ? s.notes : (cur.notes || []),
     reminders: Array.isArray(s.reminders) ? s.reminders : (cur.reminders || []),
+    payslips: cleanPayslips || (cur.payslips || []),
     settings: (s.settings && typeof s.settings === 'object') ? s.settings : (cur.settings || {})
   };
   saveDB();

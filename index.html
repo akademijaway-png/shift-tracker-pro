@@ -213,9 +213,15 @@
     /* v1.9.0 — weekday picker chips for auto shifts */
     .day-chip { border: 2px solid var(--slate-200); background: white; color: var(--slate-600); border-radius: 10px; padding: 9px 0; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; flex: 1 1 13%; min-width: 42px; font-family: inherit; }
     .day-chip.selected { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border-color: transparent; }
-    /* v1.9.1 — quick-set time chips (☀️ 07–19 / 🌙 22–06 …) */
+    /* v1.9.2 — quick-set time chips (06–18 / 07–19 / 09–17 / 18–06 / 19–07) */
     .time-chip { border: 2px solid var(--slate-200); background: white; color: var(--slate-600); border-radius: 10px; padding: 8px 6px; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; flex: 1 1 28%; min-width: 78px; font-family: inherit; }
     .time-chip.selected { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border-color: transparent; }
+    /* v1.10.0 — How to Use accordion (native <details>, mobile-friendly) */
+    .howto-item { border: 2px solid var(--slate-100); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; background: var(--slate-50); }
+    .howto-item summary { font-weight: 700; font-size: 14px; color: var(--slate-900); cursor: pointer; list-style: none; }
+    .howto-item summary::-webkit-details-marker { display: none; }
+    .howto-item summary::after { content: '▾'; float: right; color: var(--slate-400); }
+    .howto-item p { font-size: 13px; color: var(--slate-600); margin: 6px 0 0; line-height: 1.55; }
     
     /* Message bubbles */
     .message-list { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
@@ -955,6 +961,10 @@
         <button class="btn btn-sm" style="background: rgba(74,144,217,0.12); color: var(--primary); border: 1px solid rgba(74,144,217,0.4); flex: 1 1 40%;" onclick="openAddShiftModal()" id="btn-add-shift">＋ Add Shift</button>
         <button class="btn btn-sm" style="background: linear-gradient(135deg, var(--success), #16a34a); color: white; flex: 1 1 40%;" onclick="openPayslipModal()" id="btn-payslip">📄 Payslip</button>
       </div>
+      <div class="flex gap-2 px-4 mt-2" style="flex-wrap: wrap;">
+        <button class="btn btn-sm" style="background: rgba(139,92,246,0.12); color: var(--purple); border: 1px solid rgba(139,92,246,0.4); flex: 1 1 60%;" onclick="document.getElementById('payslip-file-input').click();" id="btn-upload-payslip">📎 Upload Payslip (photo / PDF)</button>
+        <input type="file" id="payslip-file-input" accept="image/*,application/pdf" style="display: none;" onchange="handlePayslipFile(this)">
+      </div>
       
       <!-- Summary -->
       <div class="card mt-4">
@@ -972,6 +982,18 @@
         </div>
       </div>
       
+      <!-- My Payslip Files — user uploads (v1.10.0) -->
+      <div class="card mt-4" id="payslip-files-card">
+        <div class="card-padded">
+          <h3 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
+            <span style="font-size: 20px;">📂</span>
+            My Payslip Files
+          </h3>
+          <p class="text-xs text-slate-500 mb-3">The ones your employer gives you — photo or PDF, kept safe in one place (and synced to your account ☁️).</p>
+          <div id="payslip-files-list"></div>
+        </div>
+      </div>
+
       <!-- List -->
       <div id="history-list" class="px-4 space-y-3 pb-4"></div>
     </div>
@@ -1214,7 +1236,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.9.1 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.10.0 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -1297,6 +1319,25 @@
           <p class="text-xs text-slate-500 mb-3">Work the same hours often? Set them once — the shifts appear in your calendar and the <b>clock starts &amp; stops by itself</b>. ⏱️</p>
           <div id="auto-rules-list" class="mb-3"></div>
           <button class="btn btn-primary" onclick="openAutoShiftModal('')">＋ Add Auto Shift</button>
+        </div>
+      </div>
+
+      <!-- How to use the app (v1.10.0) -->
+      <div class="card mt-4">
+        <div class="card-padded">
+          <h3 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
+            <span style="font-size: 20px;">❓</span>
+            How to Use — Quick Guide
+          </h3>
+          <p class="text-xs text-slate-500 mb-3">Tap a topic to open it 👇</p>
+          <details class="howto-item"><summary>⏱️ Start &amp; stop a shift</summary><p>Home → big blue <b>START</b> button — the clock ticks and counts your € live. Tap it again (FINISH) when work ends. Forgot to press start? <b>My Earnings</b> → ＋ Add Shift.</p></details>
+          <details class="howto-item"><summary>🔁 Auto shifts (set once, runs alone)</summary><p>Settings → <b>🔁 Add Shift (auto)</b> → pick your days → tap a quick time (like ☀️ 07–19) → Save. The clock starts &amp; stops <b>by itself</b> on those days. 🔵 blue dot on the calendar = auto shift planned. Tap the day → ✏️ change or 🗑️ remove just that day.</p></details>
+          <details class="howto-item"><summary>🗓️ Calendar</summary><p><b>‹ ›</b> = previous / next month, <b>« »</b> = jump a whole year. ★ = Maltese public holiday (special pay 💶). Tap any day to see its shifts, notes and reminders.</p></details>
+          <details class="howto-item"><summary>💶 Wage &amp; pay rules</summary><p>Settings → <b>💶 My Hourly Wage</b>: set your €/hour and tick what your workplace pays (Sunday ×2, holidays, rest days, overtime). Pay is then counted automatically on every shift. Home → <b>🧮 Pay Calc</b> = quick what-if maths.</p></details>
+          <details class="howto-item"><summary>📄 Payslips — build &amp; upload</summary><p>My Earnings → <b>📄 Payslip</b>: the app BUILDS your payslip from your hours (⬇️ CSV for Excel, or 🖨️ Print → Save as PDF). My Earnings → <b>📎 Upload Payslip</b>: add the payslip your employer gives you (photo or PDF) so everything sits in one safe place.</p></details>
+          <details class="howto-item"><summary>💬 Co-workers &amp; chat</summary><p>👥 Co-workers → find a name → <b>Add Friend</b>. After they accept, chat in 💬 Messages — messages arrive even when their app is closed.</p></details>
+          <details class="howto-item"><summary>🔔 Notifications</summary><p>Settings → <b>🔔 Push Notifications</b> → Enable → then 📣 Send test to try it. 🍏 iPhone: first Share → <b>Add to Home Screen</b>, then open the app from there.</p></details>
+          <details class="howto-item"><summary>☁️ Backup &amp; new phone</summary><p>Everything saves to your account automatically (green ☁️ Cloud Backup card). New or lost phone: install the app, <b>sign in</b> — your wage, shifts, pay rules, notes and payslip files come back by themselves. 📱→📲</p></details>
         </div>
       </div>
 
@@ -1563,6 +1604,7 @@
       shifts: [],
       notes: [],
       reminders: [],
+      payslips: [], // 📎 user-uploaded payslip photos/PDFs (v1.10.0)
       conversations: [],
       messages: [],
       coworkers: [],
@@ -1631,6 +1673,7 @@
         DB.shifts = data.shifts || [];
         DB.notes = data.notes || [];
         DB.reminders = data.reminders || [];
+        DB.payslips = data.payslips || [];
         DB.conversations = data.conversations || [];
         DB.messages = data.messages || [];
         DB.coworkers = data.coworkers || [];
@@ -3300,6 +3343,7 @@
       startOfWeek.setDate(today.getDate() - today.getDay());
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       
+      try { renderPayslipFiles(); } catch (e) {}
       let filtered = DB.shifts.filter(s => s.finishTimestamp);
       
       if (historyFilter === 'today') {
@@ -3944,6 +3988,200 @@
       showToast('Shift updated ✅', 'success');
     }
 
+
+    // ==================== 📎 MY PAYSLIP FILES (user uploads) — v1.10.0 ====================
+    let _pendingPayslip = null;
+    const PAYSLIP_MAX_FILES = 15;
+    const PAYSLIP_MAX_TOTAL = 2400000; // ~2.4MB of stored text total — stays safely inside storage
+    const PAYSLIP_MAX_ITEM = 480000;   // one saved file (photos get shrunk to ≈350KB)
+
+    function payslipStore() {
+      if (!Array.isArray(DB.payslips)) DB.payslips = [];
+      return DB.payslips;
+    }
+
+    function payslipMonthLabel(key) {
+      if (!key) return 'No month';
+      const m = (getPayslipMonths() || []).find(x => x.key === key);
+      return m ? m.label : key;
+    }
+
+    function payslipSizeText(len) {
+      const kb = Math.max(1, Math.round(len / 1024));
+      return kb > 900 ? (kb / 1024).toFixed(1) + ' MB' : kb + ' KB';
+    }
+
+    function handlePayslipFile(input) {
+      const file = input.files && input.files[0];
+      input.value = ''; // so the same file can be picked again later
+      if (!file) return;
+      const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+      const isImg = ((file.type || '').indexOf('image/') === 0) || /\.(png|jpe?g|heic|heif|webp)$/i.test(file.name || '');
+      if (!isPdf && !isImg) { showToast('Please choose a photo or a PDF 📄', 'error'); return; }
+      if (isPdf && file.size > 2000000) { showToast('That PDF is too big (max 2 MB)', 'error'); return; }
+      if (isImg && file.size > 9000000) { showToast('That photo is too big — try a smaller one', 'error'); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const raw = String(reader.result || '');
+        if (!raw) { showToast('Could not read that file 😕', 'error'); return; }
+        if (isImg) {
+          compressPayslipImage(raw, shrunk => openPayslipMonthModal({ name: file.name || 'payslip.jpg', type: 'image', dataUrl: shrunk }));
+        } else {
+          openPayslipMonthModal({ name: file.name || 'payslip.pdf', type: 'pdf', dataUrl: raw });
+        }
+      };
+      reader.onerror = () => showToast('Could not read that file 😕', 'error');
+      reader.readAsDataURL(file);
+    }
+
+    function compressPayslipImage(dataUrl, cb) {
+      let doneFlag = false;
+      const finish = u => { if (doneFlag) return; doneFlag = true; cb(u); };
+      try {
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const maxDim = 1400;
+            const scale = Math.min(1, maxDim / Math.max(img.width || 1, img.height || 1));
+            const c = document.createElement('canvas');
+            c.width = Math.max(1, Math.round((img.width || 1) * scale));
+            c.height = Math.max(1, Math.round((img.height || 1) * scale));
+            const ctx = c.getContext && c.getContext('2d');
+            if (!ctx) return finish(dataUrl);
+            ctx.drawImage(img, 0, 0, c.width, c.height);
+            const out = c.toDataURL('image/jpeg', 0.8);
+            finish(out && out.length > 100 ? out : dataUrl);
+          } catch (e) { finish(dataUrl); }
+        };
+        img.onerror = () => finish(dataUrl);
+        img.src = dataUrl;
+      } catch (e) { finish(dataUrl); }
+      setTimeout(() => finish(dataUrl), 600); // decode fallback (very old browsers / test rigs)
+    }
+
+    function openPayslipMonthModal(pending) {
+      _pendingPayslip = pending;
+      const months = getPayslipMonths() || [];
+      openModal('Save this payslip 📎', `
+        <p class="text-muted mb-3 text-center" style="word-break: break-all;"><b>${escapeHtmlLite(pending.name)}</b></p>
+        ${pending.type === 'image'
+          ? `<div class="text-center mb-3"><img src="${pending.dataUrl}" alt="payslip" style="max-width: 100%; max-height: 180px; border-radius: 12px; border: 2px solid var(--slate-200);"></div>`
+          : '<p class="text-center mb-3" style="font-size: 42px;">📄</p>'}
+        <div class="input-group">
+          <label>Which month is it for?</label>
+          <select id="payslip-month-pick" class="input">
+            ${months.map(m => `<option value="${m.key}">${m.label}</option>`).join('')}
+            <option value="">— no month</option>
+          </select>
+        </div>
+        <div class="flex gap-3" style="flex-wrap: wrap;">
+          <button class="btn btn-secondary flex-1" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-success flex-1" onclick="confirmPayslipUpload()">Save Payslip 📎</button>
+        </div>
+      `);
+    }
+
+    function confirmPayslipUpload() {
+      if (!_pendingPayslip) { closeModal(); return; }
+      const sel = document.getElementById('payslip-month-pick');
+      const ok = savePayslipRecord({
+        id: generateId(),
+        name: _pendingPayslip.name,
+        type: _pendingPayslip.type,
+        month: sel ? sel.value : '',
+        dataUrl: _pendingPayslip.dataUrl,
+        createdAt: new Date().toISOString()
+      });
+      _pendingPayslip = null;
+      if (ok) { closeModal(); showToast('Payslip saved 📎 — find it under My Payslip Files 📂', 'success'); }
+    }
+
+    function savePayslipRecord(rec) {
+      const list = payslipStore();
+      if (!rec.dataUrl || rec.dataUrl.length > PAYSLIP_MAX_ITEM) { showToast('That file is still too big — try a smaller photo 😕', 'error'); return false; }
+      if (list.length >= PAYSLIP_MAX_FILES) { showToast('You already have ' + PAYSLIP_MAX_FILES + ' payslips — delete one first 🗑️', 'error'); return false; }
+      const total = list.reduce((a, p) => a + (p.dataUrl ? p.dataUrl.length : 0), 0) + rec.dataUrl.length;
+      if (total > PAYSLIP_MAX_TOTAL) { showToast('Payslip storage is full — delete an old one first 🗑️', 'error'); return false; }
+      list.push(rec);
+      saveData();
+      renderPayslipFiles();
+      return true;
+    }
+
+    function renderPayslipFiles() {
+      const box = document.getElementById('payslip-files-list');
+      if (!box) return;
+      const list = payslipStore().slice().sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+      if (!list.length) {
+        box.innerHTML = '<p class="text-center text-slate-400 py-3 text-sm">No payslip files yet — tap 📎 Upload Payslip above</p>';
+        return;
+      }
+      box.innerHTML = list.map(p => `
+        <div class="p-3 rounded-xl mb-2 flex items-center gap-3" style="background: var(--slate-50); border: 1px solid var(--slate-200);">
+          ${p.type === 'image'
+            ? `<img src="${p.dataUrl}" alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 10px; border: 1px solid var(--slate-200); flex-shrink: 0; cursor: pointer;" onclick="viewPayslip('${p.id}')">`
+            : `<div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, var(--error), #dc2626); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; cursor: pointer;" onclick="viewPayslip('${p.id}')">📄</div>`}
+          <div class="flex-1" style="min-width: 0;">
+            <p class="font-semibold text-slate-900 text-sm" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtmlLite(p.name || 'Payslip')}</p>
+            <p class="text-xs text-slate-500">${payslipMonthLabel(p.month)} · ${payslipSizeText((p.dataUrl || '').length)}</p>
+          </div>
+          <button title="View" aria-label="View" onclick="viewPayslip('${p.id}')" style="background: var(--slate-100); border: none; border-radius: 8px; padding: 8px; cursor: pointer;">👁️</button>
+          <button title="Download" aria-label="Download" onclick="downloadPayslipFile('${p.id}')" style="background: var(--slate-100); border: none; border-radius: 8px; padding: 8px; cursor: pointer;">⬇</button>
+          <button title="Delete" aria-label="Delete" onclick="askDeletePayslip('${p.id}')" style="background: none; border: none; color: var(--error); cursor: pointer; padding: 8px;">🗑️</button>
+        </div>
+      `).join('');
+    }
+
+    function viewPayslip(id) {
+      const p = payslipStore().find(x => x.id === id);
+      if (!p) return;
+      if (p.type === 'image') {
+        openModal('📎 ' + (p.name || 'Payslip'), `
+          <img src="${p.dataUrl}" alt="payslip" style="width: 100%; border-radius: 12px;">
+          <p class="text-xs text-slate-400 text-center mt-2">${payslipMonthLabel(p.month)}</p>
+          <button class="btn btn-primary mt-3" onclick="downloadPayslipFile('${p.id}')">⬇ Download</button>
+        `);
+      } else {
+        openModal('📎 ' + (p.name || 'Payslip'), `
+          <p class="text-center" style="font-size: 48px;">📄</p>
+          <p class="text-muted mb-4 text-center">PDF payslip · ${payslipMonthLabel(p.month)}<br>Tap download to open it in your files app.</p>
+          <button class="btn btn-primary" onclick="downloadPayslipFile('${p.id}')">⬇ Download PDF</button>
+        `);
+      }
+    }
+
+    function downloadPayslipFile(id) {
+      const p = payslipStore().find(x => x.id === id);
+      if (!p) return;
+      const a = document.createElement('a');
+      a.href = p.dataUrl;
+      a.download = p.name || ('payslip-' + (p.month || 'file'));
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast('Downloading ⬇ ' + (p.name || 'payslip'), 'success');
+    }
+
+    function askDeletePayslip(id) {
+      const p = payslipStore().find(x => x.id === id);
+      if (!p) return;
+      openModal('Delete this payslip? 🗑️', `
+        <p class="text-muted mb-4 text-center"><b>${escapeHtmlLite(p.name || 'Payslip')}</b><br>${payslipMonthLabel(p.month)} — this cannot be undone.</p>
+        <div class="flex gap-3">
+          <button class="btn btn-secondary flex-1" onclick="closeModal()">Keep it</button>
+          <button class="btn flex-1" style="background: var(--error); color: white;" onclick="confirmDeletePayslip('${p.id}')">Delete</button>
+        </div>
+      `);
+    }
+
+    function confirmDeletePayslip(id) {
+      DB.payslips = payslipStore().filter(x => x.id !== id);
+      saveData();
+      closeModal();
+      renderPayslipFiles();
+      showToast('Payslip deleted 🗑️', 'success');
+    }
+
     // ==================== MONTHLY PAYSLIP EXPORT ====================
     function escapeHtmlLite(s) {
       return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -4499,11 +4737,11 @@
         <div class="input-group">
           <label>Times — tap a quick set, or set your own ⏰</label>
           <div class="flex gap-1" style="flex-wrap: wrap;">
+            <button type="button" class="time-chip" data-s="06:00" data-e="18:00" onclick="presetAutoTimes(this)">☀️ 06–18</button>
             <button type="button" class="time-chip" data-s="07:00" data-e="19:00" onclick="presetAutoTimes(this)">☀️ 07–19</button>
-            <button type="button" class="time-chip" data-s="08:00" data-e="16:00" onclick="presetAutoTimes(this)">☀️ 08–16</button>
-            <button type="button" class="time-chip" data-s="08:00" data-e="17:00" onclick="presetAutoTimes(this)">☀️ 08–17</button>
+            <button type="button" class="time-chip" data-s="09:00" data-e="17:00" onclick="presetAutoTimes(this)">☀️ 09–17</button>
+            <button type="button" class="time-chip" data-s="18:00" data-e="06:00" onclick="presetAutoTimes(this)">🌙 18–06</button>
             <button type="button" class="time-chip" data-s="19:00" data-e="07:00" onclick="presetAutoTimes(this)">🌙 19–07</button>
-            <button type="button" class="time-chip" data-s="22:00" data-e="06:00" onclick="presetAutoTimes(this)">🌙 22–06</button>
           </div>
         </div>
         <div class="flex gap-3">
@@ -4584,11 +4822,11 @@
       openModal('Edit this auto shift ✏️', `
         <p class="text-muted mb-4 text-center">${formatDate(new Date(s.schedStart))}</p>
         <div class="flex gap-1 mb-2" style="flex-wrap: wrap;">
-          <button type="button" class="time-chip" data-s="07:00" data-e="19:00" onclick="presetAutoTimes(this)">☀️ 07–19</button>
-          <button type="button" class="time-chip" data-s="08:00" data-e="16:00" onclick="presetAutoTimes(this)">☀️ 08–16</button>
-          <button type="button" class="time-chip" data-s="08:00" data-e="17:00" onclick="presetAutoTimes(this)">☀️ 08–17</button>
+          <button type="button" class="time-chip" data-s="06:00" data-e="18:00" onclick="presetAutoTimes(this)">☀️ 06–18</button>
+            <button type="button" class="time-chip" data-s="07:00" data-e="19:00" onclick="presetAutoTimes(this)">☀️ 07–19</button>
+          <button type="button" class="time-chip" data-s="09:00" data-e="17:00" onclick="presetAutoTimes(this)">☀️ 09–17</button>
+          <button type="button" class="time-chip" data-s="18:00" data-e="06:00" onclick="presetAutoTimes(this)">🌙 18–06</button>
           <button type="button" class="time-chip" data-s="19:00" data-e="07:00" onclick="presetAutoTimes(this)">🌙 19–07</button>
-          <button type="button" class="time-chip" data-s="22:00" data-e="06:00" onclick="presetAutoTimes(this)">🌙 22–06</button>
         </div>
         <div class="flex gap-3">
           <div class="input-group flex-1">
@@ -5121,6 +5359,7 @@ async function enterOnlineMode(user) {
     (cloud.shifts && cloud.shifts.length) ||
     (cloud.notes && cloud.notes.length) ||
     (cloud.reminders && cloud.reminders.length) ||
+    (cloud.payslips && cloud.payslips.length) ||
     (cloud.settings && Object.keys(cloud.settings).length));
   const localHasData = (DB.shifts.length + DB.notes.length + DB.reminders.length) > 0 ||
                        !!DB.settings.hourlyWage;
@@ -5130,6 +5369,7 @@ async function enterOnlineMode(user) {
     DB.notes = cloud.notes || [];
     DB.reminders = cloud.reminders || [];
     DB.settings = Object.assign({ ringtone: 'classic', hourlyWage: null }, cloud.settings);
+    DB.payslips = Array.isArray(cloud.payslips) ? cloud.payslips : (DB.payslips || []);
   } else if (localHasData) {
     pushStateToServer(); // first login on this account: migrate local data up
   }
@@ -5175,9 +5415,73 @@ async function enterOnlineMode(user) {
     } else if (pushSupported() && Notification.permission === 'default' &&
                !localStorage.getItem('st_push_hint')) {
       localStorage.setItem('st_push_hint', '1');
-      setTimeout(() => showToast('🔔 Tip: Settings → Notifications — get reminders even when the app is closed!', ''), 6000);
+      setTimeout(() => maybePromptNotifications(), 2500);
     }
   });
+  injectSettingsCards();
+}
+
+// ---------- settings injections: push card + cloud backup card ----------
+function injectSettingsCards() {
+  if (document.getElementById('cloud-backup-card')) { updatePushStatus(); updateBackupCard(); return; }
+  const joined = document.getElementById('settings-joined');
+  const anchor = joined && joined.closest ? joined.closest('.card') : null;
+  if (!anchor) return;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div class="card mt-4" id="cloud-backup-card">
+      <div class="card-padded">
+        <h3 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
+          <span style="font-size: 20px;">☁️</span>
+          Cloud Backup
+        </h3>
+        <p id="backup-status" class="text-xs text-slate-500 mb-2">Checking…</p>
+        <p class="text-xs text-slate-400">Phone lost or swapped? 📱→📲 Install the app again and <b>sign in</b> — your shifts, wage, pay rules, notes &amp; settings come back by themselves.</p>
+      </div>
+    </div>
+    <div class="card mt-4" id="push-card">
+      <div class="card-padded">
+        <h3 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
+          <span style="font-size: 20px;">🔔</span>
+          Push Notifications
+        </h3>
+        <p id="push-status" class="text-xs text-slate-500 mb-3">Checking…</p>
+        <div class="flex gap-2" style="flex-wrap: wrap;">
+          <button class="btn btn-primary btn-sm flex-1" id="push-enable-btn" style="min-width: 150px;" onclick="enableNotifications()">🔔 Enable notifications</button>
+          <button class="btn btn-secondary btn-sm flex-1" id="push-test-btn" style="display: none; min-width: 150px;" onclick="sendTestPush()">📣 Send test notification</button>
+        </div>
+        <p class="text-xs text-slate-400 mt-2">iPhone: first tap <b>Share → Add to Home Screen</b>, open the app from the Home Screen, then enable. 🍏</p>
+      </div>
+    </div>`;
+  anchor.parentNode.insertBefore(wrap, anchor);
+  while (wrap.firstChild) anchor.parentNode.insertBefore(wrap.firstChild, anchor);
+  updatePushStatus();
+  updateBackupCard();
+}
+
+function updateBackupCard() {
+  const el = document.getElementById('backup-status');
+  if (!el) return;
+  if (!ONLINE.active) { el.textContent = '📴 Offline demo — sign in to have your work saved to the cloud.'; return; }
+  let last = 0;
+  try { last = parseInt(localStorage.getItem('st_last_sync') || '0', 10); } catch (e) {}
+  const when = last ? new Date(last).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'just now';
+  el.innerHTML = '✅ <b>ON</b> — everything saves to your account automatically. <span class="text-slate-400">Last sync: ' + when + '</span>';
+}
+
+// a real ask-the-user moment (once), not a toast that points nowhere
+function maybePromptNotifications() {
+  if (!ONLINE.active || !pushSupported() || Notification.permission !== 'default') return;
+  try {
+    openModal('Turn on notifications? 🔔', `
+      <p class="text-muted mb-4 text-center">Get a buzz for <b>new messages</b> 💬 and <b>shift reminders</b> ⏰ — even when the app is closed.</p>
+      <div class="flex gap-3" style="flex-wrap: wrap;">
+        <button class="btn btn-secondary flex-1" onclick="closeModal()">Not now</button>
+        <button class="btn btn-primary flex-1" onclick="closeModal(); enableNotifications();">🔔 Enable</button>
+      </div>
+      <p class="text-xs text-slate-400 text-center mt-4">iPhone: works from the Home-Screen app (Share → Add to Home Screen first). 🍏</p>
+    `);
+  } catch (e) {}
 }
 
 // ---------- websocket ----------
@@ -5277,8 +5581,8 @@ function pushStateToServer() {
   ONLINE.statePushTimer = setTimeout(() => {
     apiFetch('/api/state', {
       method: 'PUT',
-      body: { state: { shifts: DB.shifts, notes: DB.notes, reminders: DB.reminders, settings: DB.settings } }
-    }).catch(() => {});
+      body: { state: { shifts: DB.shifts, notes: DB.notes, reminders: DB.reminders, payslips: DB.payslips || [], settings: DB.settings } }
+    }).then(r => { if (r && r.ok) { try { localStorage.setItem('st_last_sync', String(Date.now())); } catch (e) {} updateBackupCard(); } }).catch(() => {});
     if (DB.settings.hourlyWage) {
       apiFetch('/api/me', { method: 'PUT', body: { hourlyWage: DB.settings.hourlyWage } }).catch(() => {});
     }
@@ -5329,6 +5633,14 @@ async function handleAuthSubmit() {
         toggleAuthMode();
         err.textContent = '';
         showToast('😊 You already have an account — just sign in!', 'success');
+        return;
+      }
+      // tried to sign in with an email that was never registered? hop them to Create —
+      // (this is the classic "I typed a different Gmail by accident" moment)
+      if (authMode === 'login' && r.status === 404) {
+        toggleAuthMode();
+        err.textContent = '';
+        showToast('🆕 No account with this email yet — create it below!', 'success');
         return;
       }
       err.textContent = r.data.error || 'Something went wrong';
@@ -6205,5 +6517,5 @@ navigateTo = function (page) {
 bootOnlineLayer();
 
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2b21b7fac9acd75',t:'MTc4NjczMzAzMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2b2b44b0c65ccd8',t:'MTc4NjczOTI4OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
