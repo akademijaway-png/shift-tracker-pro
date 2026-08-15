@@ -1264,7 +1264,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.13.0 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.15.0 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -1332,6 +1332,14 @@
               <input type="checkbox" id="settings-overtime" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" onchange="setOvertimeOn(this.checked)">
               <span class="text-sm text-slate-900 font-semibold">⏰ <b>Overtime</b> — hours beyond 8h stack ×1.5</span>
             </label>
+            <label class="flex items-center gap-2 mb-2" style="cursor: pointer;">
+              <input type="checkbox" id="settings-break-on" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" onchange="toggleBreakDefault(this.checked)">
+              <span class="text-sm text-slate-900 font-semibold">🍔 <b>Unpaid break</b> — default: cut it from every new shift</span>
+            </label>
+            <div id="settings-break-row" class="flex items-center gap-2 mb-2" style="display: none; margin-left: 28px;">
+              <input type="number" id="settings-break-min" class="input" inputmode="numeric" min="5" max="720" step="5" style="max-width: 110px; margin-bottom: 0;" onchange="setBreakDefaultMin(this.value)">
+              <span class="text-xs text-slate-500 font-semibold">minutes off, unpaid</span>
+            </div>
             <p class="text-xs text-slate-400 mt-2">The engine applies these rules automatically to every shift &amp; the live dashboard. 🧮 Use Pay Calc (Home) for one-off what-if checks.</p>
           </div>
         </div>
@@ -1389,7 +1397,7 @@
           <details class="howto-item"><summary>⏱️ Start &amp; stop a shift</summary><p>Home → big blue <b>START</b> button — the clock ticks and counts your € live. Tap it again (FINISH) when work ends. Forgot to press start? <b>My Earnings</b> → ＋ Add Shift.</p></details>
           <details class="howto-item"><summary>🔁 Auto shifts (set once, runs alone)</summary><p>Settings → <b>🔁 Add Shift (auto)</b> → pick your days → tap a quick time (like ☀️ 07–19) → Save. The clock starts &amp; stops <b>by itself</b> on those days. 🔵 blue dot on the calendar = auto shift planned. Tap the day → ✏️ change or 🗑️ remove just that day. Break not paid? Tick 🍔 <b>Unpaid break</b> in that same form and set the minutes.</p></details>
           <details class="howto-item"><summary>🗓️ Calendar</summary><p><b>‹ ›</b> = previous / next month, <b>« »</b> = jump a whole year. ★ = Maltese public holiday (special pay 💶). Tap any day to see its shifts, notes and reminders.</p></details>
-          <details class="howto-item"><summary>💶 Wage &amp; pay rules</summary><p>Settings → <b>💶 My Hourly Wage</b>: set your €/hour and tick what your workplace pays (Sunday ×2, holidays, rest days, overtime). Pay is then counted automatically on every shift. Home → <b>🧮 Pay Calc</b> = quick what-if maths. 🍔 <b>Unpaid break?</b> Tick it in any shift form (add / edit / auto) or right here in Pay Calc — those minutes come straight off the paid time, e.g. 12h − 30m = 11.5h paid. 🗓️ <b>Payday tracking?</b> Settings → <b>🗓️ Payday</b> → tick <b>Enable</b> → pick your payday day (or set the exact next date). The dashboard then shows the <b>calendar month AND the payday period</b> (like 15 Aug → 14 Sep), and <b>📜 Salary History</b> keeps every finished period with its full maths — the normal monthly payslip stays exactly as it was.</p></details>
+          <details class="howto-item"><summary>💶 Wage &amp; pay rules</summary><p>Settings → <b>💶 My Hourly Wage</b>: set your €/hour and tick what your workplace pays (Sunday ×2, holidays, rest days, overtime). Pay is then counted automatically on every shift. Home → <b>🧮 Pay Calc</b> = quick what-if maths. 🍔 <b>Unpaid break?</b> Tick it in any shift form (add / edit / auto) or right here in Pay Calc — those minutes come straight off the paid time, e.g. 12h − 30m = 11.5h paid. <b>Same break every day?</b> Settings → <b>💶 My Hourly Wage</b> → tick <b>🍔 Unpaid break</b> and set the minutes once — every NEW shift (⏱️ Start/Finish too, plus auto rules) starts with it ticked; you can still change or untick it per shift. 🗓️ <b>Payday tracking?</b> Settings → <b>🗓️ Payday</b> → tick <b>Enable</b> → pick your payday day (or set the exact next date). The dashboard then shows the <b>calendar month AND the payday period</b> (like 15 Aug → 14 Sep), and <b>📜 Salary History</b> keeps every finished period with its full maths — the normal monthly payslip stays exactly as it was.</p></details>
           <details class="howto-item"><summary>📄 Payslips &amp; 📋 rosters</summary><p>My Earnings → <b>📄 Payslip</b>: the app BUILDS your payslip from your hours (⬇️ CSV for Excel, or 🖨️ Print → Save as PDF). My Earnings → <b>📎 Upload Payslip</b>: add the payslip your employer gives you (photo or PDF) so everything sits in one safe place. My Earnings → <b>📋 Upload Roster</b>: keep the roster your boss gives out (photo or PDF) — tag it like “17–30 August” and find it any time under <b>My Roster Files</b>.</p></details>
           <details class="howto-item"><summary>💬 Co-workers &amp; chat</summary><p>👥 Co-workers → find a name → <b>Add Friend</b>. After they accept, chat in 💬 Messages — messages arrive even when their app is closed.</p></details>
           <details class="howto-item"><summary>🔔 Notifications</summary><p>Settings → <b>🔔 Push Notifications</b> → Enable → then 📣 Send test to try it. 🍏 iPhone: first Share → <b>Add to Home Screen</b>, then open the app from there.</p></details>
@@ -1965,6 +1973,7 @@
       if (shift) {
         shift.finishTimestamp = now.toISOString();
         shift.totalDuration = getElapsedSeconds(shift.startTimestamp);
+        if (breakDefaultMin() > 0 && !(parseInt(shift.breakMin, 10) > 0)) shift.breakMin = breakDefaultMin(); // 🍔 v1.15.0
       }
       DB.user.workingStatus = 'NOT_WORKING';
       DB.user.currentShiftId = null;
@@ -1979,12 +1988,21 @@
     let timerInterval;
     let startTime = 0;
 
+    let _clockLastSec = -1; // ⚡ v1.14.0 — idle-throttle memory for the clock
     function startTimers() {
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(() => {
-        updateTimers();
-        updateClock();
-      }, 33); // ~30fps for smooth milliseconds
+        // ⚡ v1.14.0 — when NOT working, only the clock matters: tick it once per second.
+        // (30fps every second of the day kept the phone busy and made tab taps stutter.)
+        const working = DB.user && DB.user.workingStatus === 'WORKING' && DB.user.currentShiftStart;
+        if (working) {
+          updateTimers();
+          updateClock();
+        } else {
+          const sec = Math.floor(Date.now() / 1000);
+          if (sec !== _clockLastSec) { _clockLastSec = sec; updateClock(); }
+        }
+      }, 33); // live shift = buttery 30fps; idle = the throttle above keeps it to 1 tick/sec
       updateTimers();
       updateClock();
     }
@@ -2328,6 +2346,37 @@
     // ==================== 🍔 UNPAID BREAK (v1.11.0) ====================
     // Some jobs clock 12 hours but only pay 11.5 — the break is unpaid.
     // shift.breakMin = unpaid break minutes (0 / missing = whole shift is paid).
+    // 🍔 Default unpaid break (v1.15.0) — set once in Settings; every NEW shift form starts with it.
+    // Per-shift forms can still override (untick or change the minutes). Old shifts are never touched.
+    function breakDefaultMin() {
+      if (!DB.settings.breakDefaultOn) return 0;
+      let b = parseInt(DB.settings.breakDefaultMin, 10);
+      if (!isFinite(b) || b <= 0) b = 30;
+      return Math.min(b, 720);
+    }
+    function toggleBreakDefault(on) {
+      DB.settings.breakDefaultOn = !!on;
+      if (on && !(parseInt(DB.settings.breakDefaultMin, 10) > 0)) DB.settings.breakDefaultMin = 30;
+      saveData();
+      refreshBreakDefaultSettings();
+      showToast(on ? 'Default unpaid break ON 🍔 — new shifts start with it' : 'Default unpaid break OFF', 'success');
+    }
+    function setBreakDefaultMin(v) {
+      let b = parseInt(v, 10);
+      if (!isFinite(b) || b < 5) b = 5;
+      DB.settings.breakDefaultMin = Math.min(b, 720);
+      saveData();
+      refreshBreakDefaultSettings();
+    }
+    function refreshBreakDefaultSettings() {
+      const on = !!DB.settings.breakDefaultOn;
+      const cb = document.getElementById('settings-break-on');
+      const row = document.getElementById('settings-break-row');
+      const inp = document.getElementById('settings-break-min');
+      if (cb) cb.checked = on;
+      if (row) row.style.display = on ? 'flex' : 'none';
+      if (inp) inp.value = breakDefaultMin() || 30;
+    }
     function shiftBreakMin(shift) {
       let b = parseInt(shift && shift.breakMin, 10);
       if (!isFinite(b) || b < 0) b = 0;
@@ -2937,7 +2986,7 @@
           <label>Hours worked (e.g. 8 or 9.5)</label>
           <input type="number" id="paycalc-hours" class="input" inputmode="decimal" min="0" step="0.25" value="8" onkeypress="if(event.key==='Enter')runPayCalculator()">
         </div>
-        ${breakFieldsHTML('calc', 0)}
+        ${breakFieldsHTML('calc', breakDefaultMin())}
         <p class="text-xs text-slate-400 mb-2" style="text-align: center;">Your rate: <b>${formatEuro(wage)}/h</b> · 🇲🇹 ticks auto-check from the date — override as you like!</p>
         <div style="background: var(--slate-50); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;">
           ${tick('paycalc-sunday', '🔴 <b>Sunday Work</b> — double time (×2)')}
@@ -3672,6 +3721,7 @@
       const otT = document.getElementById('settings-overtime');
       if (otT) otT.checked = DB.settings.overtimeOn !== false;
       try { refreshPaydaySettings(); } catch (e) {}
+      try { refreshBreakDefaultSettings(); } catch (e) {}
 
       const nameRow = document.getElementById('settings-name');
       if (nameRow) nameRow.textContent = DB.user.name;
@@ -4503,10 +4553,15 @@
       return true;
     }
 
+    let _payslipRenderSig = null; // ⚡ v1.14.0 — remembers what the list last drew
     function renderPayslipFiles() {
       const box = document.getElementById('payslip-files-list');
       if (!box) return;
       const list = payslipStore().slice().sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+      // ⚡ v1.14.0 — same files as last time? skip the rewrite (re-drawing photos stuttered tabs)
+      const _sig = list.map(p => [p.id, p.name, p.month, p.type, (p.dataUrl || '').length].join(':')).join('|');
+      if (_sig === _payslipRenderSig) return;
+      _payslipRenderSig = _sig;
       if (!list.length) {
         box.innerHTML = '<p class="text-center text-slate-400 py-3 text-sm">No payslip files yet — tap 📎 Upload Payslip above</p>';
         return;
@@ -4514,7 +4569,7 @@
       box.innerHTML = list.map(p => `
         <div class="p-3 rounded-xl mb-2 flex items-center gap-3" style="background: var(--slate-50); border: 1px solid var(--slate-200);">
           ${p.type === 'image'
-            ? `<img src="${p.dataUrl}" alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 10px; border: 1px solid var(--slate-200); flex-shrink: 0; cursor: pointer;" onclick="viewPayslip('${p.id}')">`
+            ? `<img loading="lazy" decoding="async" src="${p.dataUrl}" alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 10px; border: 1px solid var(--slate-200); flex-shrink: 0; cursor: pointer;" onclick="viewPayslip('${p.id}')">`
             : `<div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, var(--error), #dc2626); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; cursor: pointer;" onclick="viewPayslip('${p.id}')">📄</div>`}
           <div class="flex-1" style="min-width: 0;">
             <p class="font-semibold text-slate-900 text-sm" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtmlLite(p.name || 'Payslip')}</p>
@@ -4663,10 +4718,15 @@
       return true;
     }
 
+    let _rosterRenderSig = null; // ⚡ v1.14.0 — remembers what the list last drew
     function renderRosterFiles() {
       const box = document.getElementById('roster-files-list');
       if (!box) return;
       const list = rosterStore().slice().sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+      // ⚡ v1.14.0 — same files as last time? skip the rewrite (re-drawing photos stuttered tabs)
+      const _sig = list.map(p => [p.id, p.name, p.label, p.type, (p.dataUrl || '').length].join(':')).join('|');
+      if (_sig === _rosterRenderSig) return;
+      _rosterRenderSig = _sig;
       if (!list.length) {
         box.innerHTML = '<p class="text-center text-slate-400 py-3 text-sm">No roster files yet — tap 📋 Upload Roster above</p>';
         return;
@@ -4674,7 +4734,7 @@
       box.innerHTML = list.map(p => `
         <div class="p-3 rounded-xl mb-2 flex items-center gap-3" style="background: var(--slate-50); border: 1px solid var(--slate-200);">
           ${p.type === 'image'
-            ? `<img src="${p.dataUrl}" alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 10px; border: 1px solid var(--slate-200); flex-shrink: 0; cursor: pointer;" onclick="viewRoster('${p.id}')">`
+            ? `<img loading="lazy" decoding="async" src="${p.dataUrl}" alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 10px; border: 1px solid var(--slate-200); flex-shrink: 0; cursor: pointer;" onclick="viewRoster('${p.id}')">`
             : `<div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #0ea5e9, #0369a1); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; cursor: pointer;" onclick="viewRoster('${p.id}')">📋</div>`}
           <div class="flex-1" style="min-width: 0;">
             <p class="font-semibold text-slate-900 text-sm" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtmlLite(p.name || 'Roster')}</p>
@@ -5322,7 +5382,7 @@
             <option value="month"${repeat === 'month' ? ' selected' : ''}>Until the end of this month</option>
           </select>
         </div>
-        ${breakFieldsHTML('auto', editing ? editing.breakMin : 0)}
+        ${breakFieldsHTML('auto', editing ? editing.breakMin : breakDefaultMin())}
         <p class="text-xs text-slate-400 mb-3">💡 Overnight works too (e.g. 22:00 → 06:00). Each added shift can still be edited or removed from its calendar day.</p>
         <p id="auto-error" class="text-error text-center font-semibold"></p>
         <div class="flex gap-3" style="flex-wrap: wrap;">
@@ -5506,7 +5566,7 @@
           <label>Clocked out</label>
           <input type="datetime-local" id="add-shift-finish" class="input" value="${toDatetimeLocalValue(afternoon.toISOString())}" onchange="updateAddShiftPreview()" oninput="updateAddShiftPreview()">
         </div>
-        ${breakFieldsHTML('add', 0)}
+        ${breakFieldsHTML('add', breakDefaultMin())}
         <p id="add-shift-error" class="text-error text-center font-semibold"></p>
         <div class="p-4 rounded-xl mb-4 text-center" style="background: var(--slate-50);" id="add-shift-preview"></div>
         <div class="flex gap-3">
@@ -7094,5 +7154,5 @@ navigateTo = function (page) {
 bootOnlineLayer();
 
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2b5abd6ac6aed16',t:'MTc4Njc3MDM5OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2ba38cfe971eddb',t:'MTc4NjgxODExNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
