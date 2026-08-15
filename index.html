@@ -455,6 +455,8 @@
     .calendar-day.holiday { background: linear-gradient(135deg, #ef4444, #f59e0b); color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35); }
     .calendar-day.holiday .holiday-star { position: absolute; top: 2px; right: 4px; font-size: 9px; line-height: 1; }
     .pay-badge { background: linear-gradient(135deg, var(--success), #16a34a); color: white; font-weight: 700; font-size: 13px; padding: 6px 14px; border-radius: 999px; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); white-space: nowrap; }
+    /* v1.11.0 — 🍔 unpaid break badge */
+    .break-badge { display: inline-block; background: rgba(245, 158, 11, 0.14); color: #b45309; border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 700; margin-left: 6px; white-space: nowrap; }
     .pay-total { background: linear-gradient(135deg, #f59e0b, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 24px !important; font-weight: 800; }
     .friend-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; background: var(--slate-50); border: 1px solid var(--slate-200); }
     .friend-row .avatar { width: 42px; height: 42px; font-size: 15px; flex-shrink: 0; }
@@ -770,6 +772,17 @@
               <span class="text-sm text-slate-500 font-semibold" id="dash-lastmonth-label">Earnings last month</span>
               <span class="font-mono font-bold text-lg text-slate-900" id="dash-lastmonth">€0.00</span>
             </div>
+            <div class="flex justify-between items-center py-3 border-b border-slate-100">
+              <span class="text-sm text-slate-500 font-semibold">📅 Calendar Month <span class="text-xs text-slate-400" id="dash-thismonth-range"></span></span>
+              <span class="font-mono font-bold text-lg text-slate-900" id="dash-thismonth">€0.00</span>
+            </div>
+            <div class="py-3 border-b border-slate-100" id="dash-payday-row" style="display: none;">
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-slate-500 font-semibold">🗓️ Payday Period <span class="text-xs text-slate-400" id="dash-payday-range"></span></span>
+                <span class="font-mono font-bold text-lg" style="color: var(--success);" id="dash-payday">€0.00</span>
+              </div>
+              <button class="btn btn-sm mt-2" style="width: 100%; background: rgba(16,185,129,0.12); color: var(--success); border: 1px solid rgba(16,185,129,0.35);" onclick="openPaydayHistoryModal()">📜 Salary History</button>
+            </div>
             <div class="pt-4" id="dash-chart-wrap" style="display: none;">
               <p class="text-sm text-slate-500 font-semibold mb-2">Last 6 Months 📊</p>
               <div id="dash-chart" class="chart"></div>
@@ -965,6 +978,10 @@
         <button class="btn btn-sm" style="background: rgba(139,92,246,0.12); color: var(--purple); border: 1px solid rgba(139,92,246,0.4); flex: 1 1 60%;" onclick="document.getElementById('payslip-file-input').click();" id="btn-upload-payslip">📎 Upload Payslip (photo / PDF)</button>
         <input type="file" id="payslip-file-input" accept="image/*,application/pdf" style="display: none;" onchange="handlePayslipFile(this)">
       </div>
+      <div class="flex gap-2 px-4 mt-2" style="flex-wrap: wrap;">
+        <button class="btn btn-sm" style="background: rgba(14,165,233,0.12); color: #0284c7; border: 1px solid rgba(14,165,233,0.4); flex: 1 1 60%;" onclick="document.getElementById('roster-file-input').click();" id="btn-upload-roster">📋 Upload Roster (photo / PDF)</button>
+        <input type="file" id="roster-file-input" accept="image/*,application/pdf" style="display: none;" onchange="handleRosterFile(this)">
+      </div>
       
       <!-- Summary -->
       <div class="card mt-4">
@@ -994,6 +1011,17 @@
         </div>
       </div>
 
+      <!-- My Roster Files — roster uploads (v1.12.0) -->
+      <div class="card mt-4" id="roster-files-card">
+        <div class="card-padded">
+          <h3 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
+            <span style="font-size: 20px;">📋</span>
+            My Roster Files
+          </h3>
+          <p class="text-xs text-slate-500 mb-3">The roster your boss hands out — photo or PDF, kept safe in one place (and synced to your account ☁️).</p>
+          <div id="roster-files-list"></div>
+        </div>
+      </div>
       <!-- List -->
       <div id="history-list" class="px-4 space-y-3 pb-4"></div>
     </div>
@@ -1236,7 +1264,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.10.0 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.13.0 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -1309,6 +1337,34 @@
         </div>
       </div>
 
+      <!-- Payday Tracking (v1.13.0) -->
+      <div class="card mt-4">
+        <div class="card-padded">
+          <h3 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
+            <span style="font-size: 20px;">🗓️</span>
+            Payday
+          </h3>
+          <p class="text-xs text-slate-500 mb-3">When does the money actually land? The app builds <b>payday salary periods</b> (like 15th → 14th) next to your normal calendar months — <b>both stay available</b>.</p>
+          <label class="flex items-center gap-2 mb-3" style="cursor: pointer;">
+            <input type="checkbox" id="settings-payday-on" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" onchange="togglePaydayTracking(this.checked)">
+            <span class="text-sm text-slate-900 font-semibold">☑ Enable <b>Payday Tracking</b></span>
+          </label>
+          <div id="payday-settings-body" style="display: none;">
+            <div class="input-group">
+              <label>My payday — the day of the month</label>
+              <select id="settings-payday-day" class="input" onchange="setPaydayDay(this.value)">
+                <option value="">— pick a day (1st … 31st)</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Next payday — exact date <span class="text-slate-400 font-normal">(optional — for employers without a fixed day)</span></label>
+              <input type="date" id="settings-payday-next" class="input" onchange="setPaydayNext(this.value)">
+            </div>
+            <p class="text-xs text-slate-500 mb-2" id="payday-settings-preview"></p>
+            <button class="btn btn-sm" style="width: 100%; background: rgba(16,185,129,0.12); color: var(--success); border: 1px solid rgba(16,185,129,0.35);" onclick="openPaydayHistoryModal()">📜 Open Salary History</button>
+          </div>
+        </div>
+      </div>
       <!-- Auto Shifts: set a pattern once, the clock runs by itself (v1.9.0) -->
       <div class="card mt-4">
         <div class="card-padded">
@@ -1331,10 +1387,10 @@
           </h3>
           <p class="text-xs text-slate-500 mb-3">Tap a topic to open it 👇</p>
           <details class="howto-item"><summary>⏱️ Start &amp; stop a shift</summary><p>Home → big blue <b>START</b> button — the clock ticks and counts your € live. Tap it again (FINISH) when work ends. Forgot to press start? <b>My Earnings</b> → ＋ Add Shift.</p></details>
-          <details class="howto-item"><summary>🔁 Auto shifts (set once, runs alone)</summary><p>Settings → <b>🔁 Add Shift (auto)</b> → pick your days → tap a quick time (like ☀️ 07–19) → Save. The clock starts &amp; stops <b>by itself</b> on those days. 🔵 blue dot on the calendar = auto shift planned. Tap the day → ✏️ change or 🗑️ remove just that day.</p></details>
+          <details class="howto-item"><summary>🔁 Auto shifts (set once, runs alone)</summary><p>Settings → <b>🔁 Add Shift (auto)</b> → pick your days → tap a quick time (like ☀️ 07–19) → Save. The clock starts &amp; stops <b>by itself</b> on those days. 🔵 blue dot on the calendar = auto shift planned. Tap the day → ✏️ change or 🗑️ remove just that day. Break not paid? Tick 🍔 <b>Unpaid break</b> in that same form and set the minutes.</p></details>
           <details class="howto-item"><summary>🗓️ Calendar</summary><p><b>‹ ›</b> = previous / next month, <b>« »</b> = jump a whole year. ★ = Maltese public holiday (special pay 💶). Tap any day to see its shifts, notes and reminders.</p></details>
-          <details class="howto-item"><summary>💶 Wage &amp; pay rules</summary><p>Settings → <b>💶 My Hourly Wage</b>: set your €/hour and tick what your workplace pays (Sunday ×2, holidays, rest days, overtime). Pay is then counted automatically on every shift. Home → <b>🧮 Pay Calc</b> = quick what-if maths.</p></details>
-          <details class="howto-item"><summary>📄 Payslips — build &amp; upload</summary><p>My Earnings → <b>📄 Payslip</b>: the app BUILDS your payslip from your hours (⬇️ CSV for Excel, or 🖨️ Print → Save as PDF). My Earnings → <b>📎 Upload Payslip</b>: add the payslip your employer gives you (photo or PDF) so everything sits in one safe place.</p></details>
+          <details class="howto-item"><summary>💶 Wage &amp; pay rules</summary><p>Settings → <b>💶 My Hourly Wage</b>: set your €/hour and tick what your workplace pays (Sunday ×2, holidays, rest days, overtime). Pay is then counted automatically on every shift. Home → <b>🧮 Pay Calc</b> = quick what-if maths. 🍔 <b>Unpaid break?</b> Tick it in any shift form (add / edit / auto) or right here in Pay Calc — those minutes come straight off the paid time, e.g. 12h − 30m = 11.5h paid. 🗓️ <b>Payday tracking?</b> Settings → <b>🗓️ Payday</b> → tick <b>Enable</b> → pick your payday day (or set the exact next date). The dashboard then shows the <b>calendar month AND the payday period</b> (like 15 Aug → 14 Sep), and <b>📜 Salary History</b> keeps every finished period with its full maths — the normal monthly payslip stays exactly as it was.</p></details>
+          <details class="howto-item"><summary>📄 Payslips &amp; 📋 rosters</summary><p>My Earnings → <b>📄 Payslip</b>: the app BUILDS your payslip from your hours (⬇️ CSV for Excel, or 🖨️ Print → Save as PDF). My Earnings → <b>📎 Upload Payslip</b>: add the payslip your employer gives you (photo or PDF) so everything sits in one safe place. My Earnings → <b>📋 Upload Roster</b>: keep the roster your boss gives out (photo or PDF) — tag it like “17–30 August” and find it any time under <b>My Roster Files</b>.</p></details>
           <details class="howto-item"><summary>💬 Co-workers &amp; chat</summary><p>👥 Co-workers → find a name → <b>Add Friend</b>. After they accept, chat in 💬 Messages — messages arrive even when their app is closed.</p></details>
           <details class="howto-item"><summary>🔔 Notifications</summary><p>Settings → <b>🔔 Push Notifications</b> → Enable → then 📣 Send test to try it. 🍏 iPhone: first Share → <b>Add to Home Screen</b>, then open the app from there.</p></details>
           <details class="howto-item"><summary>☁️ Backup &amp; new phone</summary><p>Everything saves to your account automatically (green ☁️ Cloud Backup card). New or lost phone: install the app, <b>sign in</b> — your wage, shifts, pay rules, notes and payslip files come back by themselves. 📱→📲</p></details>
@@ -1605,6 +1661,7 @@
       notes: [],
       reminders: [],
       payslips: [], // 📎 user-uploaded payslip photos/PDFs (v1.10.0)
+      rosters: [], // 📋 user-uploaded roster photos/PDFs (v1.12.0)
       conversations: [],
       messages: [],
       coworkers: [],
@@ -1674,6 +1731,7 @@
         DB.notes = data.notes || [];
         DB.reminders = data.reminders || [];
         DB.payslips = data.payslips || [];
+        DB.rosters = data.rosters || [];
         DB.conversations = data.conversations || [];
         DB.messages = data.messages || [];
         DB.coworkers = data.coworkers || [];
@@ -2135,7 +2193,7 @@
       DB.shifts.forEach(shift => {
         if (!shift.totalDuration) return;
         const shiftDate = new Date(shift.startTimestamp);
-        const duration = Math.floor(shift.totalDuration / 1000); // Convert ms to seconds
+        const duration = shiftPaidSeconds(shift); // 🍔 v1.11.0: PAID seconds (unpaid break excluded)
         
         allTotal += duration;
         if (shiftDate >= today) todayTotal += duration;
@@ -2267,6 +2325,67 @@
       };
     }
 
+    // ==================== 🍔 UNPAID BREAK (v1.11.0) ====================
+    // Some jobs clock 12 hours but only pay 11.5 — the break is unpaid.
+    // shift.breakMin = unpaid break minutes (0 / missing = whole shift is paid).
+    function shiftBreakMin(shift) {
+      let b = parseInt(shift && shift.breakMin, 10);
+      if (!isFinite(b) || b < 0) b = 0;
+      return Math.min(b, 720); // sanity cap: never more than 12h of break
+    }
+    function shiftGrossSeconds(shift) {
+      return Math.max(0, Math.floor(((shift && shift.totalDuration) || 0) / 1000));
+    }
+    // The seconds you actually get PAID for = time at work − unpaid break.
+    function shiftPaidSeconds(shift) {
+      return Math.max(0, shiftGrossSeconds(shift) - shiftBreakMin(shift) * 60);
+    }
+
+    // Tick box + minutes field shared by every shift form (v1.11.0)
+    function breakFieldsHTML(prefix, breakMin) {
+      const on = (parseInt(breakMin, 10) || 0) > 0;
+      const val = on ? Math.min(parseInt(breakMin, 10) || 30, 720) : 30;
+      return `
+        <div class="input-group">
+          <label class="flex items-center gap-2" style="cursor: pointer; margin-bottom: 0;">
+            <input type="checkbox" id="${prefix}-break-on" ${on ? 'checked' : ''} onchange="toggleBreakField('${prefix}')" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;">
+            <span class="text-sm text-slate-900 font-semibold">🍔 <b>Unpaid break</b> <span class="text-slate-400 font-normal">— e.g. 30 min not paid</span></span>
+          </label>
+          <div id="${prefix}-break-row" class="flex items-center gap-2" style="display: ${on ? 'flex' : 'none'}; margin-top: 8px;">
+            <input type="number" id="${prefix}-break-min" class="input" inputmode="numeric" min="5" max="720" step="5" value="${val}" style="max-width: 110px; margin-bottom: 0;" oninput="breakPreviewRefresh('${prefix}')" onchange="breakPreviewRefresh('${prefix}')">
+            <span class="text-xs text-slate-500 font-semibold">minutes off, unpaid</span>
+          </div>
+        </div>`;
+    }
+
+    function toggleBreakField(prefix) {
+      const onEl = document.getElementById(prefix + '-break-on');
+      const row = document.getElementById(prefix + '-break-row');
+      if (row) row.style.display = (onEl && onEl.checked) ? 'flex' : 'none';
+      breakPreviewRefresh(prefix);
+    }
+
+    // Re-run whichever live preview belongs to this form (add / edit modals)
+    function breakPreviewRefresh(prefix) {
+      try { if (prefix === 'add') updateAddShiftPreview(); } catch (e) {}
+      try { if (prefix === 'edit') updateEditShiftPreview(); } catch (e) {}
+    }
+
+    // What the form says: 0 when unticked, otherwise the minutes (default 30)
+    function readBreakForm(prefix) {
+      const onEl = document.getElementById(prefix + '-break-on');
+      if (!onEl || !onEl.checked) return 0;
+      const minEl = document.getElementById(prefix + '-break-min');
+      let b = parseInt(minEl && minEl.value, 10);
+      if (!isFinite(b) || b <= 0) b = 30; // ticked but empty → the classic 30
+      return Math.min(b, 720);
+    }
+
+    // Little list badge: 🍔 −30m
+    function breakBadgeHTML(shift) {
+      const b = shiftBreakMin(shift);
+      return b > 0 ? `<span class="break-badge" title="Unpaid break — ${b} minutes not paid">🍔 −${b}m</span>` : '';
+    }
     function calculateEarnings() {
       const wage = parseFloat(DB.settings.hourlyWage) || 0;
       const now = new Date();
@@ -2286,7 +2405,7 @@
 
       entries.forEach(shift => {
         const date = new Date(shift.startTimestamp);
-        const secs = Math.max(0, Math.floor(shift.totalDuration / 1000)); // totalDuration is held in ms
+        const secs = shiftPaidSeconds(shift); // 🍔 v1.11.0: paid seconds — totalDuration is held in ms
         totalSeconds += secs;
         const p = calculateShiftPay(secs, date, wage);
         overtimeSeconds += p.overtimeSeconds;
@@ -2297,6 +2416,241 @@
       return { totalSeconds, overtimeSeconds, totalEarnings, lastMonthEarnings, lastMonthLabel, wage };
     }
 
+    // ==================== 🗓️ PAYDAY TRACKING (v1.13.0) ====================
+    // Two salary views live side by side: the classic CALENDAR MONTH
+    // (Aug 1 → Aug 31) and the PAYDAY PERIOD (e.g. 15 Aug → 14 Sep).
+    // Both are computed from the actual shifts — never by splitting months.
+    function ordinal(n) {
+      const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+      return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    }
+
+    function paydayEffectiveDay() {
+      const s = DB.settings || {};
+      const d = parseInt(s.paydayDay, 10);
+      if (d >= 1 && d <= 31) return d;
+      const m = s.paydayNextManual ? new Date(s.paydayNextManual + 'T00:00:00') : null;
+      if (m && !isNaN(m)) return m.getDate();
+      return null;
+    }
+
+    function paydayIsOn() {
+      return !!(DB.settings && DB.settings.paydayEnabled === true && paydayEffectiveDay());
+    }
+
+    // Clamp to the month's real length — February & leap years are safe
+    // (payday 31st → 28/29 Feb, payday 30th → 28/29 Feb, etc.)
+    function paydayAnchorInMonth(y, mo, day) {
+      const dim = new Date(y, mo + 1, 0).getDate();
+      return new Date(y, mo, Math.min(day, dim));
+    }
+
+    // The NEXT payday strictly after today (midnight-based). A manual
+    // "next payday" date wins when it's set and still in the future.
+    function paydayNextBoundary() {
+      const s = DB.settings || {};
+      const now = new Date();
+      const t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const manual = s.paydayNextManual ? new Date(s.paydayNextManual + 'T00:00:00') : null;
+      if (manual && !isNaN(manual) && manual.getTime() > t0) return manual;
+      const day = paydayEffectiveDay();
+      if (!day) return null;
+      for (let o = 0; o < 4; o++) {
+        const base = new Date(now.getFullYear(), now.getMonth() + o, 1);
+        const cand = paydayAnchorInMonth(base.getFullYear(), base.getMonth(), day);
+        if (cand.getTime() > t0) return cand;
+      }
+      return null;
+    }
+
+    // Periods: [next−1 boundary + 1 … next boundary − 1 day], newest first.
+    // paydayPeriods()[0] is the CURRENT period (it always contains today).
+    function paydayPeriods(backCount) {
+      const day = paydayEffectiveDay();
+      const next = paydayNextBoundary();
+      if (!day || !next) return [];
+      const bounds = [next];
+      let y = next.getFullYear(), mo = next.getMonth();
+      for (let i = 0; i < (backCount || 12); i++) {
+        mo--; if (mo < 0) { mo = 11; y--; }
+        bounds.push(paydayAnchorInMonth(y, mo, day));
+      }
+      const periods = [];
+      for (let i = 0; i < bounds.length - 1; i++) {
+        periods.push({
+          start: bounds[i + 1],
+          end: new Date(bounds[i].getTime() - 86400000), // day before the next payday
+          payday: bounds[i]                              // the day this period gets paid
+        });
+      }
+      return periods;
+    }
+
+    function paydayCurrentPeriod() {
+      const ps = paydayPeriods(1);
+      return ps.length ? ps[0] : null;
+    }
+
+    function paydayRangeText(p, withYear) {
+      const opt = withYear === false
+        ? { day: 'numeric', month: 'short' }
+        : { day: 'numeric', month: 'short', year: 'numeric' };
+      return p.start.toLocaleDateString('en-GB', opt) + ' → ' + p.end.toLocaleDateString('en-GB', opt);
+    }
+
+    function calendarMonthInfo(now) {
+      const n = now || new Date();
+      return {
+        start: new Date(n.getFullYear(), n.getMonth(), 1),
+        end: new Date(n.getFullYear(), n.getMonth() + 1, 0),
+        label: n.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+      };
+    }
+
+    // Actual earnings inside ANY window — uses real shifts, paid seconds
+    // (🍔 breaks off) and the full Malta rule set per day.
+    function earningsBetween(startD, endD) {
+      const wage = parseFloat(DB.settings.hourlyWage) || 0;
+      const s0 = new Date(startD.getFullYear(), startD.getMonth(), startD.getDate()).getTime();
+      const e1 = new Date(endD.getFullYear(), endD.getMonth(), endD.getDate(), 23, 59, 59, 999).getTime();
+      let seconds = 0, otSeconds = 0, pay = 0, count = 0;
+      const rows = [];
+      DB.shifts.filter(s => s.finishTimestamp && s.totalDuration).forEach(sh => {
+        const d = new Date(sh.startTimestamp);
+        const t = d.getTime();
+        if (t < s0 || t > e1) return;
+        const secs = shiftPaidSeconds(sh);
+        const p = calculateShiftPay(secs, d, wage);
+        seconds += secs; otSeconds += p.overtimeSeconds; pay += p.pay; count++;
+        rows.push({ date: d, start: sh.startTimestamp, finish: sh.finishTimestamp, secs: secs, pay: p.pay, emoji: p.emoji, label: p.label, mode: p.mode });
+      });
+      rows.sort((a, b) => a.date - b.date);
+      return { seconds: seconds, otSeconds: otSeconds, pay: pay, count: count, wage: wage, rows: rows };
+    }
+
+    // ---------------- Settings controls ----------------
+    function togglePaydayTracking(on) {
+      DB.settings.paydayEnabled = !!on;
+      saveData();
+      refreshPaydaySettings();
+      try { refreshEarningsDashboard(); } catch (e) {}
+      showToast(on ? '🗓️ Payday tracking ON — now pick your payday below 👇' : 'Payday tracking off — calendar months stay as they are ✅', 'success');
+    }
+
+    function setPaydayDay(v) {
+      const d = parseInt(v, 10);
+      DB.settings.paydayDay = (d >= 1 && d <= 31) ? d : '';
+      saveData();
+      refreshPaydaySettings();
+      try { refreshEarningsDashboard(); } catch (e) {}
+    }
+
+    function setPaydayNext(v) {
+      DB.settings.paydayNextManual = /^\d{4}-\d{2}-\d{2}$/.test(v || '') ? v : '';
+      saveData();
+      refreshPaydaySettings();
+      try { refreshEarningsDashboard(); } catch (e) {}
+    }
+
+    function refreshPaydaySettings() {
+      const on = DB.settings && DB.settings.paydayEnabled === true;
+      const tog = document.getElementById('settings-payday-on');
+      if (tog) tog.checked = on;
+      const body = document.getElementById('payday-settings-body');
+      if (body) body.style.display = on ? 'block' : 'none';
+      const sel = document.getElementById('settings-payday-day');
+      if (sel && sel.options.length <= 1) {
+        for (let d = 1; d <= 31; d++) {
+          const o = document.createElement('option');
+          o.value = String(d);
+          o.textContent = ordinal(d);
+          sel.appendChild(o);
+        }
+      }
+      if (sel) sel.value = String(parseInt(DB.settings.paydayDay, 10) || '');
+      const nx = document.getElementById('settings-payday-next');
+      if (nx) nx.value = DB.settings.paydayNextManual || '';
+      const pv = document.getElementById('payday-settings-preview');
+      if (pv) {
+        if (paydayIsOn()) {
+          const cur = paydayCurrentPeriod();
+          pv.innerHTML = cur
+            ? 'Current payday period: <b>' + paydayRangeText(cur) + '</b> — payday is <b>' + cur.payday.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) + '</b> 💶'
+            : '';
+        } else {
+          pv.innerHTML = 'Pick your payday day above — or set the exact <b>next payday date</b> if your boss does not pay on a fixed day.';
+        }
+      }
+    }
+
+    // ---------------- Salary History ----------------
+    let _paydayPeriodsCache = [];
+
+    function openPaydayHistoryModal() {
+      if (!paydayIsOn()) {
+        showToast('Turn on 🗓️ Payday Tracking in Settings first', 'error');
+        return;
+      }
+      const periods = paydayPeriods(24);
+      _paydayPeriodsCache = periods;
+      const t0 = new Date();
+      const today = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate()).getTime();
+      const cur = periods[0];
+      const past = periods.slice(1).filter(p => p.end.getTime() < today); // fully finished periods
+      const pastWithShifts = past.map(p => ({ p: p, e: earningsBetween(p.start, p.end) })).filter(x => x.e.count > 0);
+      const curE = cur ? earningsBetween(cur.start, cur.end) : null;
+
+      const rowHTML = (x, idx, isCurrent) => `
+        <div class="p-3 rounded-xl mb-2 flex items-center gap-3" style="background: var(--slate-50); border: 1px solid var(--slate-200); cursor: pointer;" onclick="viewPaydayPeriod(${idx})">
+          <span style="font-size: 20px;">${isCurrent ? '🟢' : '🗓️'}</span>
+          <div class="flex-1" style="min-width: 0;">
+            <p class="font-semibold text-slate-900 text-sm">${paydayRangeText(x.p)}${isCurrent ? ' <span class="text-xs" style="color: var(--success); font-weight: 700;">· in progress</span>' : ''}</p>
+            <p class="text-xs text-slate-500">Hours: ${(x.e.seconds / 3600).toFixed(2)} · Gross: <b>${formatEuro(x.e.pay)}</b></p>
+          </div>
+          <span style="color: var(--slate-400); font-weight: 700;">›</span>
+        </div>`;
+
+      openModal('Salary History 📜', `
+        <p class="text-muted mb-3 text-center">Payday periods build themselves from your shifts — <b>${ordinal(paydayEffectiveDay())}</b> of the month, payday to payday. Tap one to open the full maths.</p>
+        ${cur && curE ? '<p class="text-xs font-bold text-slate-400 mb-1">CURRENT PERIOD</p>' + rowHTML({ p: cur, e: curE }, 0, true) : ''}
+        ${pastWithShifts.length
+          ? '<p class="text-xs font-bold text-slate-400 mb-1 mt-3">COMPLETED PERIODS</p>' + pastWithShifts.map(x => rowHTML(x, periods.indexOf(x.p), false)).join('')
+          : '<p class="text-center text-slate-400 py-2 text-sm mt-2">Finished periods with shifts will appear here automatically.</p>'}
+        <p class="text-xs text-slate-400 text-center mt-3">Gross = before tax &amp; NI. 🍔 Unpaid breaks are already deducted. Calendar-month maths (Payslip 📄) is untouched — both stay available.</p>
+      `);
+    }
+
+    function viewPaydayPeriod(idx) {
+      const p = _paydayPeriodsCache[idx];
+      if (!p) return;
+      const e = earningsBetween(p.start, p.end);
+      const fD = d => d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+      const rowsHtml = e.rows.length ? e.rows.map(r => `
+        <div class="flex justify-between items-center py-2" style="border-bottom: 1px solid var(--slate-100);">
+          <div>
+            <p class="text-sm font-semibold text-slate-900">${fD(r.date)} ${r.mode !== 'normal' ? r.emoji : ''}</p>
+            <p class="text-xs text-slate-400">${formatTimeShort(r.start)} → ${formatTimeShort(r.finish)}${r.label && r.mode !== 'normal' ? ' · ' + r.label : ''}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-mono font-bold text-slate-900">${formatDurationShort(r.secs)}</p>
+            <p class="text-xs font-mono font-bold" style="color: var(--success);">${formatEuro(r.pay)}</p>
+          </div>
+        </div>`).join('')
+        : '<p class="text-center text-slate-400 py-3 text-sm">No shifts recorded in this period.</p>';
+      openModal('🗓️ ' + paydayRangeText(p), `
+        <p class="text-muted mb-3 text-center text-sm">Paid on <b>${p.payday.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</b> · ${e.count} shift${e.count === 1 ? '' : 's'}</p>
+        <div class="p-3 rounded-xl mb-3" style="background: var(--slate-50); max-height: 260px; overflow-y: auto;">
+          ${rowsHtml}
+        </div>
+        <div class="flex justify-between py-1"><span class="text-sm text-slate-500 font-semibold">Hours</span><span class="font-mono font-bold">${(e.seconds / 3600).toFixed(2)} h</span></div>
+        ${e.otSeconds > 0 ? `<div class="flex justify-between py-1"><span class="text-sm text-slate-500 font-semibold">… of which overtime</span><span class="font-mono font-bold" style="color: var(--warning);">${(e.otSeconds / 3600).toFixed(2)} h</span></div>` : ''}
+        <div class="flex justify-between py-2 border-t border-slate-100 mt-1">
+          <span class="text-sm text-slate-500 font-semibold">Gross salary</span>
+          <span class="font-mono font-bold pay-total">${formatEuro(e.pay)}</span>
+        </div>
+        <p class="text-xs text-slate-400 text-center mt-2">Gross = before tax &amp; NI. 🍔 Unpaid breaks already deducted.</p>
+      `);
+    }
     function refreshEarningsDashboard() {
       const wageEl = document.getElementById('dash-wage-badge');
       if (!wageEl) return;
@@ -2315,6 +2669,29 @@
       document.getElementById('dash-total').textContent = formatEuro(e.totalEarnings);
       document.getElementById('dash-lastmonth-label').textContent = 'Earnings ' + e.lastMonthLabel + ' (last month)';
       document.getElementById('dash-lastmonth').textContent = formatEuro(e.lastMonthEarnings);
+      // 🗓️ v1.13.0 — calendar month AND payday period, side by side
+      try {
+        const mi = calendarMonthInfo();
+        const me = earningsBetween(mi.start, mi.end);
+        const mEl = document.getElementById('dash-thismonth');
+        if (mEl) mEl.textContent = formatEuro(me.pay);
+        const mRange = document.getElementById('dash-thismonth-range');
+        if (mRange) mRange.textContent = '(' + mi.start.getDate() + '–' + mi.end.getDate() + ' ' + mi.start.toLocaleDateString('en-GB', { month: 'short' }) + ')';
+        const pdRow = document.getElementById('dash-payday-row');
+        if (pdRow) {
+          pdRow.style.display = paydayIsOn() ? 'block' : 'none';
+          if (paydayIsOn()) {
+            const cur = paydayCurrentPeriod();
+            if (cur) {
+              const pe = earningsBetween(cur.start, cur.end);
+              const pdEl = document.getElementById('dash-payday');
+              if (pdEl) pdEl.textContent = formatEuro(pe.pay);
+              const pdRange = document.getElementById('dash-payday-range');
+              if (pdRange) pdRange.textContent = '(' + paydayRangeText(cur, false) + ')';
+            }
+          }
+        }
+      } catch (e2) {}
       renderEarningsChart();
     }
 
@@ -2560,6 +2937,7 @@
           <label>Hours worked (e.g. 8 or 9.5)</label>
           <input type="number" id="paycalc-hours" class="input" inputmode="decimal" min="0" step="0.25" value="8" onkeypress="if(event.key==='Enter')runPayCalculator()">
         </div>
+        ${breakFieldsHTML('calc', 0)}
         <p class="text-xs text-slate-400 mb-2" style="text-align: center;">Your rate: <b>${formatEuro(wage)}/h</b> · 🇲🇹 ticks auto-check from the date — override as you like!</p>
         <div style="background: var(--slate-50); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;">
           ${tick('paycalc-sunday', '🔴 <b>Sunday Work</b> — double time (×2)')}
@@ -2583,11 +2961,17 @@
       const res = document.getElementById('paycalc-result');
       if (!res) return;
       const on = id => { const b = document.getElementById(id); return b && b.checked; };
-      const hours = parseFloat(document.getElementById('paycalc-hours').value);
-      if (isNaN(hours) || hours <= 0) {
+      const hoursAll = parseFloat(document.getElementById('paycalc-hours').value);
+      const calcBreak = readBreakForm('calc'); // 🍔 v1.11.0
+      if (isNaN(hoursAll) || hoursAll <= 0) {
         res.innerHTML = '<p class="text-error text-center font-semibold">Enter the hours you worked (e.g. 8 or 9.5)</p>';
         return;
       }
+      if (calcBreak > 0 && calcBreak / 60 >= hoursAll) {
+        res.innerHTML = '<p class="text-error text-center font-semibold">The break cannot be as long as the whole shift 😄</p>';
+        return;
+      }
+      const hours = calcBreak > 0 ? Math.round((hoursAll - calcBreak / 60) * 100) / 100 : hoursAll; // 🍔 paid hours
       const r = securityPayCalc({
         hours,
         wage: parseFloat(DB.settings.hourlyWage) || 0,
@@ -2609,6 +2993,7 @@
       res.innerHTML = `
         <div style="background: var(--slate-50); border-radius: 14px; padding: 12px; margin-top: 12px;">
           ${site ? `<p class="text-xs font-bold text-slate-500 mb-2" style="text-align:center;">${site} — noted, no rate change applies</p>` : ''}
+          ${calcBreak > 0 ? `<p class="text-xs font-bold mb-2" style="text-align:center; color: #b45309;">🍔 Unpaid break −${calcBreak} min — paid hours: ${hours}h (of ${hoursAll}h at work)</p>` : ''}
           <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
             <tr class="text-slate-400" style="font-size: 11px;">
               <th style="text-align:left; padding: 4px;">What</th><th style="text-align:right; padding: 4px;">Hours</th><th style="text-align:right; padding: 4px;">Rate ×</th><th style="text-align:right; padding: 4px;">€/h</th><th style="text-align:right; padding: 4px;">Total</th>
@@ -2942,12 +3327,12 @@
       
       if (shift) {
         const wageNow = parseFloat(DB.settings.hourlyWage) || 0;
-        const payInfo = calculateShiftPay(Math.floor(shift.totalDuration / 1000), date, wageNow);
+        const payInfo = calculateShiftPay(shiftPaidSeconds(shift), date, wageNow); // 🍔 v1.11.0 paid time
         content += `
           <div class="p-4 rounded-xl mb-4" style="background: linear-gradient(135deg, var(--success), #16a34a); color: white;">
             <p class="text-sm font-semibold mb-1 opacity-90">Shift</p>
             <p class="text-lg font-mono font-bold">${formatTimeShort(shift.startTimestamp)} → ${formatTimeShort(shift.finishTimestamp)}</p>
-            <p class="text-sm font-semibold mt-1 opacity-90">${formatDurationShort(Math.floor(shift.totalDuration / 1000))}</p>
+            <p class="text-sm font-semibold mt-1 opacity-90">${formatDurationShort(shiftPaidSeconds(shift))} paid${shiftBreakMin(shift) > 0 ? ' · 🍔 −' + shiftBreakMin(shift) + 'm break (unpaid)' : ''}</p>
             ${wageNow > 0 ? `<p class="text-sm font-bold mt-2" style="background: rgba(255,255,255,0.22); border-radius: 10px; padding: 8px 12px;">💶 ${formatEuro(payInfo.pay)}${payInfo.mode && payInfo.mode !== 'normal' ? ' · ' + payInfo.emoji + ' ' + payInfo.label : ''}${payInfo.lieu ? ' · 🏖️ +1 paid day off' : ''}${payInfo.overtimeSeconds > 0 ? ' · incl. OT' : ''}</p>` : ''}
           </div>
         `;
@@ -3286,6 +3671,7 @@
       if (r2) r2.value = DB.settings.restDay2Day || '';
       const otT = document.getElementById('settings-overtime');
       if (otT) otT.checked = DB.settings.overtimeOn !== false;
+      try { refreshPaydaySettings(); } catch (e) {}
 
       const nameRow = document.getElementById('settings-name');
       if (nameRow) nameRow.textContent = DB.user.name;
@@ -3344,6 +3730,7 @@
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       
       try { renderPayslipFiles(); } catch (e) {}
+      try { renderRosterFiles(); } catch (e) {}
       let filtered = DB.shifts.filter(s => s.finishTimestamp);
       
       if (historyFilter === 'today') {
@@ -3357,7 +3744,7 @@
       // Sort by date desc
       filtered.sort((a, b) => new Date(b.startTimestamp) - new Date(a.startTimestamp));
       
-      const totalDuration = filtered.reduce((sum, s) => sum + (s.totalDuration || 0), 0);
+      const totalDuration = filtered.reduce((sum, s) => sum + shiftPaidSeconds(s) * 1000, 0); // 🍔 v1.11.0: paid time
       document.getElementById('history-total').textContent = formatDurationShort(Math.floor(totalDuration / 1000));
       document.getElementById('history-count').textContent = filtered.length;
       
@@ -3386,11 +3773,12 @@
               <p class="text-sm text-slate-500 mt-1">
                 <span class="font-mono">${formatTime(shift.startTimestamp)}</span> →
                 <span class="font-mono">${formatTime(shift.finishTimestamp)}</span>
+                ${breakBadgeHTML(shift)}
               </p>
             </div>
             <div class="flex items-center gap-2">
               <div class="px-4 py-2 rounded-full" style="background: linear-gradient(135deg, var(--primary), var(--purple)); color: white;">
-                <span class="font-mono font-bold">${formatDurationShort(Math.floor(shift.totalDuration / 1000))}</span>
+                <span class="font-mono font-bold">${formatDurationShort(shiftPaidSeconds(shift))}</span>
               </div>
               <button class="history-edit-btn" onclick="openEditShiftModal('${shift.id}')" title="Edit this shift" aria-label="Edit this shift">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -3422,7 +3810,7 @@
         <div class="p-4 rounded-xl mb-4" style="background: var(--slate-50);">
           <p class="mb-2"><span class="text-slate-500 font-semibold">Date:</span> <span class="font-bold">${formatDate(shift.startTimestamp)}</span></p>
           <p class="mb-2"><span class="text-slate-500 font-semibold">Time:</span> <span class="font-mono font-bold">${formatTime(shift.startTimestamp)} → ${formatTime(shift.finishTimestamp)}</span></p>
-          <p class="mb-2"><span class="text-slate-500 font-semibold">Duration:</span> <span class="font-mono font-bold text-primary">${formatDurationShort(Math.floor((shift.totalDuration || 0) / 1000))}</span></p>
+          <p class="mb-2"><span class="text-slate-500 font-semibold">Duration:</span> <span class="font-mono font-bold text-primary">${formatDurationShort(shiftPaidSeconds(shift))}</span> ${breakBadgeHTML(shift)}</p>
         </div>
         <div class="flex gap-3">
           <button class="btn btn-secondary flex-1" onclick="closeModal()">Cancel</button>
@@ -3926,6 +4314,7 @@
           <label>Clocked out</label>
           <input type="datetime-local" id="edit-shift-finish" class="input" value="${toDatetimeLocalValue(shift.finishTimestamp)}" onchange="updateEditShiftPreview()" oninput="updateEditShiftPreview()">
         </div>
+        ${breakFieldsHTML('edit', shift.breakMin)}
         <p id="edit-shift-error" class="text-error text-center font-semibold"></p>
         <div class="p-4 rounded-xl mb-4 text-center" style="background: var(--slate-50);" id="edit-shift-preview"></div>
         <div class="flex gap-3">
@@ -3937,13 +4326,15 @@
     }
 
     // Shared live preview used by both the Edit- and Add-shift modals
-    function shiftPreviewHTML(startVal, finishVal) {
+    function shiftPreviewHTML(startVal, finishVal, breakMin) {
       const start = new Date(startVal);
       const finish = new Date(finishVal);
       if (isNaN(start) || isNaN(finish) || finish <= start) {
         return '<p class="text-sm text-slate-400">—</p>';
       }
-      const secs = Math.floor((finish - start) / 1000);
+      const grossSecs = Math.floor((finish - start) / 1000);
+      const brk = Math.max(0, Math.min(parseInt(breakMin, 10) || 0, 720));
+      const secs = Math.max(0, grossSecs - brk * 60); // 🍔 paid time (v1.11.0)
       const wage = parseFloat(DB.settings.hourlyWage) || 0;
       const p = calculateShiftPay(secs, start, wage);
       const holidayName = getMaltaHolidayName(start);
@@ -3952,7 +4343,8 @@
       if (pm.mode !== 'normal') badge = `<span class="pay-badge">${pm.emoji} ${holidayName || pm.label}${pm.mode === 'holiday' ? ' — +day off, extras ×2' : ' — ×' + pm.mult}</span>`;
       return `
         <p class="text-sm text-slate-500 font-semibold mb-1">Duration</p>
-        <p class="font-mono font-bold text-xl text-primary mb-2">${formatDurationShort(secs)}</p>
+        <p class="font-mono font-bold text-xl text-primary mb-2">${formatDurationShort(grossSecs)}</p>
+        ${brk > 0 ? `<p class="text-xs font-bold mb-2" style="color: #b45309;">🍔 Unpaid break −${brk}m → 💰 paid time: <span class="font-mono">${formatDurationShort(secs)}</span></p>` : ''}
         ${badge}
         ${wage > 0 ? `<p class="text-sm font-bold pay-total mt-2">≈ ${formatEuro(p.pay)}</p>` : ''}
       `;
@@ -3963,7 +4355,7 @@
       const finishEl = document.getElementById('edit-shift-finish');
       const preview = document.getElementById('edit-shift-preview');
       if (!startEl || !finishEl || !preview) return;
-      preview.innerHTML = shiftPreviewHTML(startEl.value, finishEl.value);
+      preview.innerHTML = shiftPreviewHTML(startEl.value, finishEl.value, readBreakForm('edit'));
     }
 
     function saveEditedShift(shiftId) {
@@ -3977,9 +4369,12 @@
       if (finish <= start) return fail('Clock-out must be after clock-in');
       if (finish.getTime() > Date.now() + 60000) return fail('A shift cannot finish in the future');
       if (finish - start > 36 * 3600 * 1000) return fail('That is longer than 36 hours — please double-check');
+      const breakMinEdit = readBreakForm('edit'); // 🍔 v1.11.0
+      if (breakMinEdit > 0 && breakMinEdit * 60000 >= finish - start) return fail('The break cannot be as long as the whole shift 😄');
       shift.startTimestamp = start.toISOString();
       shift.finishTimestamp = finish.toISOString();
       shift.totalDuration = finish - start; // ms, same unit as finishShift()
+      shift.breakMin = breakMinEdit; // 🍔 unpaid break minutes (v1.11.0)
       shift.editedAt = new Date().toISOString();
       saveData();
       closeModal();
@@ -4182,6 +4577,165 @@
       showToast('Payslip deleted 🗑️', 'success');
     }
 
+    // ==================== 📋 MY ROSTER FILES (user uploads) — v1.12.0 ====================
+    let _pendingRoster = null;
+    const ROSTER_MAX_FILES = 10;
+    const ROSTER_MAX_TOTAL = 2400000; // ~2.4MB of stored text total — stays safely inside storage
+    const ROSTER_MAX_ITEM = 480000;   // one saved file (photos get shrunk to ≈350KB)
+
+    function rosterStore() {
+      if (!Array.isArray(DB.rosters)) DB.rosters = [];
+      return DB.rosters;
+    }
+
+    function rosterLabelText(label) {
+      const t = String(label || '').trim();
+      return t || 'No label';
+    }
+
+    function handleRosterFile(input) {
+      const file = input.files && input.files[0];
+      input.value = ''; // so the same file can be picked again later
+      if (!file) return;
+      const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+      const isImg = ((file.type || '').indexOf('image/') === 0) || /\.(png|jpe?g|heic|heif|webp)$/i.test(file.name || '');
+      if (!isPdf && !isImg) { showToast('Please choose a photo or a PDF 📄', 'error'); return; }
+      if (isPdf && file.size > 2000000) { showToast('That PDF is too big (max 2 MB)', 'error'); return; }
+      if (isImg && file.size > 9000000) { showToast('That photo is too big — try a smaller one', 'error'); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const raw = String(reader.result || '');
+        if (!raw) { showToast('Could not read that file 😕', 'error'); return; }
+        if (isImg) {
+          compressPayslipImage(raw, shrunk => openRosterLabelModal({ name: file.name || 'roster.jpg', type: 'image', dataUrl: shrunk }));
+        } else {
+          openRosterLabelModal({ name: file.name || 'roster.pdf', type: 'pdf', dataUrl: raw });
+        }
+      };
+      reader.onerror = () => showToast('Could not read that file 😕', 'error');
+      reader.readAsDataURL(file);
+    }
+
+    function openRosterLabelModal(pending) {
+      _pendingRoster = pending;
+      openModal('Save this roster 📋', `
+        <p class="text-muted mb-3 text-center" style="word-break: break-all;"><b>${escapeHtmlLite(pending.name)}</b></p>
+        ${pending.type === 'image'
+          ? `<div class="text-center mb-3"><img src="${pending.dataUrl}" alt="roster" style="max-width: 100%; max-height: 180px; border-radius: 12px; border: 2px solid var(--slate-200);"></div>`
+          : '<p class="text-center mb-3" style="font-size: 42px;">📋</p>'}
+        <div class="input-group">
+          <label>Which weeks is it for? <span class="text-slate-400 font-normal">(optional)</span></label>
+          <input type="text" id="roster-label-pick" class="input" maxlength="60" placeholder="e.g. 17–30 August">
+        </div>
+        <div class="flex gap-3" style="flex-wrap: wrap;">
+          <button class="btn btn-secondary flex-1" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-success flex-1" onclick="confirmRosterUpload()">Save Roster 📋</button>
+        </div>
+      `);
+      const inp = document.getElementById('roster-label-pick');
+      if (inp) inp.focus();
+    }
+
+    function confirmRosterUpload() {
+      if (!_pendingRoster) { closeModal(); return; }
+      const inp = document.getElementById('roster-label-pick');
+      const ok = saveRosterRecord({
+        id: generateId(),
+        name: _pendingRoster.name,
+        type: _pendingRoster.type,
+        label: (inp ? inp.value : '').trim().slice(0, 60),
+        dataUrl: _pendingRoster.dataUrl,
+        createdAt: new Date().toISOString()
+      });
+      _pendingRoster = null;
+      if (ok) { closeModal(); showToast('Roster saved 📋 — find it under My Roster Files', 'success'); }
+    }
+
+    function saveRosterRecord(rec) {
+      const list = rosterStore();
+      if (!rec.dataUrl || rec.dataUrl.length > ROSTER_MAX_ITEM) { showToast('That file is still too big — try a smaller photo 😕', 'error'); return false; }
+      if (list.length >= ROSTER_MAX_FILES) { showToast('You already have ' + ROSTER_MAX_FILES + ' rosters — delete one first 🗑️', 'error'); return false; }
+      const total = list.reduce((a, p) => a + (p.dataUrl ? p.dataUrl.length : 0), 0) + rec.dataUrl.length;
+      if (total > ROSTER_MAX_TOTAL) { showToast('Roster storage is full — delete an old one first 🗑️', 'error'); return false; }
+      list.push(rec);
+      saveData();
+      renderRosterFiles();
+      return true;
+    }
+
+    function renderRosterFiles() {
+      const box = document.getElementById('roster-files-list');
+      if (!box) return;
+      const list = rosterStore().slice().sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+      if (!list.length) {
+        box.innerHTML = '<p class="text-center text-slate-400 py-3 text-sm">No roster files yet — tap 📋 Upload Roster above</p>';
+        return;
+      }
+      box.innerHTML = list.map(p => `
+        <div class="p-3 rounded-xl mb-2 flex items-center gap-3" style="background: var(--slate-50); border: 1px solid var(--slate-200);">
+          ${p.type === 'image'
+            ? `<img src="${p.dataUrl}" alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 10px; border: 1px solid var(--slate-200); flex-shrink: 0; cursor: pointer;" onclick="viewRoster('${p.id}')">`
+            : `<div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #0ea5e9, #0369a1); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; cursor: pointer;" onclick="viewRoster('${p.id}')">📋</div>`}
+          <div class="flex-1" style="min-width: 0;">
+            <p class="font-semibold text-slate-900 text-sm" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtmlLite(p.name || 'Roster')}</p>
+            <p class="text-xs text-slate-500">${escapeHtmlLite(rosterLabelText(p.label))} · ${payslipSizeText((p.dataUrl || '').length)}</p>
+          </div>
+          <button title="View" aria-label="View" onclick="viewRoster('${p.id}')" style="background: var(--slate-100); border: none; border-radius: 8px; padding: 8px; cursor: pointer;">👁️</button>
+          <button title="Download" aria-label="Download" onclick="downloadRosterFile('${p.id}')" style="background: var(--slate-100); border: none; border-radius: 8px; padding: 8px; cursor: pointer;">⬇</button>
+          <button title="Delete" aria-label="Delete" onclick="askDeleteRoster('${p.id}')" style="background: none; border: none; color: var(--error); cursor: pointer; padding: 8px;">🗑️</button>
+        </div>
+      `).join('');
+    }
+
+    function viewRoster(id) {
+      const p = rosterStore().find(x => x.id === id);
+      if (!p) return;
+      if (p.type === 'image') {
+        openModal('📋 ' + (p.name || 'Roster'), `
+          <img src="${p.dataUrl}" alt="roster" style="width: 100%; border-radius: 12px;">
+          <p class="text-xs text-slate-400 text-center mt-2">${escapeHtmlLite(rosterLabelText(p.label))}</p>
+          <button class="btn btn-primary mt-3" onclick="downloadRosterFile('${p.id}')">⬇ Download</button>
+        `);
+      } else {
+        openModal('📋 ' + (p.name || 'Roster'), `
+          <p class="text-center" style="font-size: 48px;">📋</p>
+          <p class="text-muted mb-4 text-center">PDF roster · ${escapeHtmlLite(rosterLabelText(p.label))}<br>Tap download to open it in your files app.</p>
+          <button class="btn btn-primary" onclick="downloadRosterFile('${p.id}')">⬇ Download PDF</button>
+        `);
+      }
+    }
+
+    function downloadRosterFile(id) {
+      const p = rosterStore().find(x => x.id === id);
+      if (!p) return;
+      const a = document.createElement('a');
+      a.href = p.dataUrl;
+      a.download = p.name || ('roster-' + (p.label || 'file'));
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast('Downloading ⬇ ' + (p.name || 'roster'), 'success');
+    }
+
+    function askDeleteRoster(id) {
+      const p = rosterStore().find(x => x.id === id);
+      if (!p) return;
+      openModal('Delete this roster? 🗑️', `
+        <p class="text-muted mb-4 text-center"><b>${escapeHtmlLite(p.name || 'Roster')}</b><br>${escapeHtmlLite(rosterLabelText(p.label))} — this cannot be undone.</p>
+        <div class="flex gap-3">
+          <button class="btn btn-secondary flex-1" onclick="closeModal()">Keep it</button>
+          <button class="btn flex-1" style="background: var(--error); color: white;" onclick="confirmDeleteRoster('${p.id}')">Delete</button>
+        </div>
+      `);
+    }
+
+    function confirmDeleteRoster(id) {
+      DB.rosters = rosterStore().filter(x => x.id !== id);
+      saveData();
+      closeModal();
+      renderRosterFiles();
+      showToast('Roster deleted 🗑️', 'success');
+    }
     // ==================== MONTHLY PAYSLIP EXPORT ====================
     function escapeHtmlLite(s) {
       return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -4215,7 +4769,8 @@
         .filter(x => x.date >= start && x.date < end)
         .sort((a, b) => a.date - b.date)
         .map(x => {
-          const secs = Math.max(0, Math.floor(x.shift.totalDuration / 1000));
+          const secs = shiftPaidSeconds(x.shift); // 🍔 v1.11.0 paid time
+          const brkMin = shiftBreakMin(x.shift);
           const p = calculateShiftPay(secs, x.date, wage);
           const holiday = getMaltaHolidayName(x.date);
           return {
@@ -4223,6 +4778,7 @@
             start: x.shift.startTimestamp,
             finish: x.shift.finishTimestamp,
             hours: secs / 3600,
+            breakMin: brkMin,
             dayType: holiday ? ('★ ' + holiday + (p.lieu ? ' (+day off)' : '')) : (p.mode && p.mode !== 'normal' ? (p.emoji + ' ' + p.label) : (x.date.getDay() === 0 ? 'Sunday' : 'Normal')),
             multText: p.mode === 'holiday' ? '1× + 2×' : ('x' + (p.mode ? p.mult : (p.double ? 2 : 1))),
             double: p.double,
@@ -4235,8 +4791,9 @@
         t.overtimeHours += r.overtimeHours;
         t.pay += r.pay;
         if (r.double) t.doubleDays++;
+        t.breakMin += r.breakMin || 0;
         return t;
-      }, { hours: 0, overtimeHours: 0, pay: 0, doubleDays: 0 });
+      }, { hours: 0, overtimeHours: 0, pay: 0, doubleDays: 0, breakMin: 0 });
       return {
         key: monthKey,
         label: start.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
@@ -4278,6 +4835,7 @@
       box.innerHTML = `
         <div class="flex justify-between py-1"><span class="text-sm text-slate-500 font-semibold">Shifts</span><span class="font-mono font-bold">${d.rows.length}</span></div>
         <div class="flex justify-between py-1"><span class="text-sm text-slate-500 font-semibold">Hours</span><span class="font-mono font-bold">${d.totals.hours.toFixed(2)} h</span></div>
+        ${d.totals.breakMin > 0 ? `<div class="flex justify-between py-1"><span class="text-sm text-slate-500 font-semibold">🍔 Unpaid breaks <span class="text-slate-400 font-normal">(already off the hours)</span></span><span class="font-mono font-bold" style="color: #b45309;">−${d.totals.breakMin} min</span></div>` : ''}
         <div class="flex justify-between py-1"><span class="text-sm text-slate-500 font-semibold">Overtime</span><span class="font-mono font-bold" style="color: var(--warning);">${d.totals.overtimeHours.toFixed(2)} h</span></div>
         <div class="flex justify-between py-1"><span class="text-sm text-slate-500 font-semibold">Double-pay days</span><span class="font-mono font-bold">${d.totals.doubleDays}</span></div>
         <div class="flex justify-between py-1 border-t border-slate-100 mt-1 pt-2"><span class="text-sm text-slate-500 font-semibold">Gross pay</span><span class="font-mono font-bold pay-total">${formatEuro(d.totals.pay)}</span></div>
@@ -4299,7 +4857,7 @@
         [q('Hourly wage'), q('EUR ' + d.wage.toFixed(2) + '/h')].join(','),
         [q('Generated'), q(new Date().toLocaleString('en-GB'))].join(','),
         '',
-        ['Date', 'Start', 'Finish', 'Hours', 'Day type', 'Rate', 'Overtime (h)', 'Pay (EUR)'].map(q).join(',')
+        ['Date', 'Start', 'Finish', 'Hours', 'Unpaid break (min)', 'Day type', 'Rate', 'Overtime (h)', 'Pay (EUR)'].map(q).join(',')
       ];
       d.rows.forEach(r => {
         lines.push([
@@ -4307,6 +4865,7 @@
           q(formatTimeShort(r.start)),
           q(formatTimeShort(r.finish)),
           q(r.hours.toFixed(2)),
+          q(String(r.breakMin || 0)),
           q(r.dayType),
           q(r.multText || (r.double ? 'x2' : 'x1')),
           q(r.overtimeHours.toFixed(2)),
@@ -4314,7 +4873,7 @@
         ].join(','));
       });
       lines.push('');
-      lines.push([q('TOTAL'), '', '', q(d.totals.hours.toFixed(2)), q(d.totals.doubleDays + ' double-pay day(s)'), '', q(d.totals.overtimeHours.toFixed(2)), q(d.totals.pay.toFixed(2))].join(','));
+      lines.push([q('TOTAL'), '', '', q(d.totals.hours.toFixed(2)), q(d.totals.breakMin > 0 ? String(d.totals.breakMin) : ''), q(d.totals.doubleDays + ' double-pay day(s)'), '', q(d.totals.overtimeHours.toFixed(2)), q(d.totals.pay.toFixed(2))].join(','));
       const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -4345,7 +4904,7 @@
         <tr>
           <td style="border-bottom:1px solid #e2e8f0; padding:6px 4px;">${r.date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</td>
           <td style="border-bottom:1px solid #e2e8f0; padding:6px 4px;">${formatTimeShort(r.start)} - ${formatTimeShort(r.finish)}</td>
-          <td style="border-bottom:1px solid #e2e8f0; padding:6px 4px; text-align:right;">${r.hours.toFixed(2)}</td>
+          <td style="border-bottom:1px solid #e2e8f0; padding:6px 4px; text-align:right;">${r.hours.toFixed(2)}${r.breakMin > 0 ? '<br><span style="font-size:10px; color:#b45309;">🍔 −' + r.breakMin + 'm break</span>' : ''}</td>
           <td style="border-bottom:1px solid #e2e8f0; padding:6px 4px;">${r.dayType}${r.multText ? ' ' + r.multText : (r.double ? ' x2' : '')}</td>
           <td style="border-bottom:1px solid #e2e8f0; padding:6px 4px; text-align:right;">${r.overtimeHours > 0 ? r.overtimeHours.toFixed(2) : '-'}</td>
           <td style="border-bottom:1px solid #e2e8f0; padding:6px 4px; text-align:right;">EUR ${r.pay.toFixed(2)}</td>
@@ -4375,7 +4934,7 @@
               <td style="border-top: 2px solid #0f172a; padding: 8px 4px; text-align: right; font-weight: bold;">EUR ${d.totals.pay.toFixed(2)}</td>
             </tr></tfoot>
           </table>
-          <p style="font-size: 10px; color: #64748b; margin-top: 16px;">Malta rules (your Settings): Sundays x2; public holiday = normal pay + a paid day off, extra hours x2; 1st rest day x1.5, 2nd rest day x2; overtime beyond 8h/day at x1.5. Generated ${new Date().toLocaleString('en-GB')} by Shift Tracker Pro.</p>
+          <p style="font-size: 10px; color: #64748b; margin-top: 16px;">Malta rules (your Settings): Sundays x2; public holiday = normal pay + a paid day off, extra hours x2; 1st rest day x1.5, 2nd rest day x2; overtime beyond 8h/day at x1.5. Unpaid breaks (🍔) are already taken off the listed hours. Generated ${new Date().toLocaleString('en-GB')} by Shift Tracker Pro.</p>
         </div>`;
       setTimeout(() => window.print(), 60);
     }
@@ -4392,7 +4951,7 @@
       }
       DB.shifts.filter(s => s.finishTimestamp && s.totalDuration).forEach(shift => {
         const date = new Date(shift.startTimestamp);
-        const secs = Math.max(0, Math.floor(shift.totalDuration / 1000));
+        const secs = shiftPaidSeconds(shift); // 🍔 v1.11.0 paid time
         const p = calculateShiftPay(secs, date, wage);
         const bucket = series.find(x => date >= x.start && date < x.end);
         if (bucket) bucket.amount += p.pay;
@@ -4547,6 +5106,7 @@
         date: dateStr,
         schedStart: se[0].toISOString(),
         schedEnd: se[1].toISOString(),
+        breakMin: rule.breakMin || 0, // 🍔 v1.11.0 unpaid break
         startTimestamp: null,
         finishTimestamp: null,
         totalDuration: null
@@ -4673,7 +5233,7 @@
             <span style="font-size: 20px;">🔁</span>
             <div class="flex-1">
               <p class="font-semibold text-slate-900 text-sm">${humanizeAutoDays(r.days)} · ${r.start} → ${r.end}</p>
-              <p class="text-xs text-slate-500">${autoRepeatLabel(r)}${r.enabled === false ? ' · ⏸ paused' : ''}</p>
+              <p class="text-xs text-slate-500">${autoRepeatLabel(r)}${r.enabled === false ? ' · ⏸ paused' : ''}${(r.breakMin || 0) > 0 ? ' · 🍔 −' + r.breakMin + 'm break' : ''}</p>
             </div>
             <input type="checkbox" title="On / off" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" ${r.enabled !== false ? 'checked' : ''} onchange="toggleAutoRule('${r.id}', this.checked)">
             <button title="Edit" aria-label="Edit" onclick="openAutoShiftModal('${r.id}')" style="background: var(--slate-100); border: none; border-radius: 8px; padding: 8px; cursor: pointer; color: var(--slate-600); font-size: 14px;">✏️</button>
@@ -4762,6 +5322,7 @@
             <option value="month"${repeat === 'month' ? ' selected' : ''}>Until the end of this month</option>
           </select>
         </div>
+        ${breakFieldsHTML('auto', editing ? editing.breakMin : 0)}
         <p class="text-xs text-slate-400 mb-3">💡 Overnight works too (e.g. 22:00 → 06:00). Each added shift can still be edited or removed from its calendar day.</p>
         <p id="auto-error" class="text-error text-center font-semibold"></p>
         <div class="flex gap-3" style="flex-wrap: wrap;">
@@ -4791,18 +5352,24 @@
       const repeat = (document.getElementById('auto-repeat') || {}).value || 'weekly';
       if (!days.length) return fail('Pick at least one day 🙂');
       if (!start || !end) return fail('Set both the start and end times');
+      const brkAuto = readBreakForm('auto'); // 🍔 v1.11.0
+      if (brkAuto > 0) {
+        const probe = schedTimesFor(new Date(2026, 0, 5), start, end);
+        if (brkAuto * 60000 >= probe[1].getTime() - probe[0].getTime()) return fail('The break cannot be as long as the whole shift 😄');
+      }
       if (start === end) return fail('Start and end cannot be the same time');
       if (ruleId) {
         const r = autoRules().find(x => x.id === ruleId);
         if (!r) return fail('Auto shift not found — please reopen it');
         r.days = days; r.start = start; r.end = end; r.repeat = repeat;
         r.until = autoRuleUntil(repeat); r.enabled = true;
+        r.breakMin = brkAuto; // 🍔 v1.11.0
         // regenerate this rule's not-yet-started days with the new pattern
         DB.shifts = DB.shifts.filter(s => !(s.auto && !s.startTimestamp && !s.finishTimestamp && s.autoKey && s.autoKey.indexOf(ruleId + '|') === 0));
       } else {
         autoRules().push({
           id: generateId(), days: days, start: start, end: end,
-          repeat: repeat, until: autoRuleUntil(repeat), enabled: true, createdAt: Date.now()
+          repeat: repeat, until: autoRuleUntil(repeat), enabled: true, createdAt: Date.now(), breakMin: brkAuto // 🍔 v1.11.0
         });
       }
       saveData();
@@ -4838,6 +5405,7 @@
             <input type="time" id="auto-entry-end" class="input" value="${autoTime(s.schedEnd)}">
           </div>
         </div>
+        ${breakFieldsHTML('autoentry', s.breakMin)}
         <p class="text-xs text-slate-400 mb-3">Only this day changes — the weekly pattern stays as it is.</p>
         <p id="auto-entry-error" class="text-error text-center font-semibold"></p>
         <div class="flex gap-3" style="flex-wrap: wrap;">
@@ -4857,6 +5425,9 @@
       if (start === end) { if (errEl) errEl.textContent = 'Start and end cannot be the same time'; return; }
       const day = new Date(s.schedStart);
       const se = schedTimesFor(day, start, end);
+      const brkEntry = readBreakForm('autoentry'); // 🍔 v1.11.0
+      if (brkEntry > 0 && brkEntry * 60000 >= se[1].getTime() - se[0].getTime()) { if (errEl) errEl.textContent = 'The break cannot be as long as the whole shift 😄'; return; }
+      s.breakMin = brkEntry;
       s.schedStart = se[0].toISOString();
       s.schedEnd = se[1].toISOString();
       if (s.startTimestamp) {
@@ -4935,6 +5506,7 @@
           <label>Clocked out</label>
           <input type="datetime-local" id="add-shift-finish" class="input" value="${toDatetimeLocalValue(afternoon.toISOString())}" onchange="updateAddShiftPreview()" oninput="updateAddShiftPreview()">
         </div>
+        ${breakFieldsHTML('add', 0)}
         <p id="add-shift-error" class="text-error text-center font-semibold"></p>
         <div class="p-4 rounded-xl mb-4 text-center" style="background: var(--slate-50);" id="add-shift-preview"></div>
         <div class="flex gap-3">
@@ -4950,7 +5522,7 @@
       const finishEl = document.getElementById('add-shift-finish');
       const preview = document.getElementById('add-shift-preview');
       if (!startEl || !finishEl || !preview) return;
-      preview.innerHTML = shiftPreviewHTML(startEl.value, finishEl.value);
+      preview.innerHTML = shiftPreviewHTML(startEl.value, finishEl.value, readBreakForm('add'));
     }
 
     function saveNewShift() {
@@ -4963,13 +5535,16 @@
       if (finish <= start) return fail('Clock-out must be after clock-in');
       if (finish.getTime() > Date.now() + 60000) return fail('You cannot add a shift in the future 😄');
       if (finish - start > 36 * 3600 * 1000) return fail('That is longer than 36 hours — please double-check');
+      const breakMin = readBreakForm('add'); // 🍔 v1.11.0
+      if (breakMin > 0 && breakMin * 60000 >= finish - start) return fail('The break cannot be as long as the whole shift 😄');
       DB.shifts.push({
         id: generateId(),
         userId: DB.user.id,
         startTimestamp: start.toISOString(),
         finishTimestamp: finish.toISOString(),
         totalDuration: finish - start, // ms, same unit as finishShift()
-        addedManually: true
+        addedManually: true,
+        breakMin: breakMin // 🍔 unpaid break minutes (v1.11.0)
       });
       saveData();
       closeModal();
@@ -5360,6 +5935,7 @@ async function enterOnlineMode(user) {
     (cloud.notes && cloud.notes.length) ||
     (cloud.reminders && cloud.reminders.length) ||
     (cloud.payslips && cloud.payslips.length) ||
+    (cloud.rosters && cloud.rosters.length) ||
     (cloud.settings && Object.keys(cloud.settings).length));
   const localHasData = (DB.shifts.length + DB.notes.length + DB.reminders.length) > 0 ||
                        !!DB.settings.hourlyWage;
@@ -5370,6 +5946,7 @@ async function enterOnlineMode(user) {
     DB.reminders = cloud.reminders || [];
     DB.settings = Object.assign({ ringtone: 'classic', hourlyWage: null }, cloud.settings);
     DB.payslips = Array.isArray(cloud.payslips) ? cloud.payslips : (DB.payslips || []);
+    DB.rosters = Array.isArray(cloud.rosters) ? cloud.rosters : (DB.rosters || []);
   } else if (localHasData) {
     pushStateToServer(); // first login on this account: migrate local data up
   }
@@ -5581,7 +6158,7 @@ function pushStateToServer() {
   ONLINE.statePushTimer = setTimeout(() => {
     apiFetch('/api/state', {
       method: 'PUT',
-      body: { state: { shifts: DB.shifts, notes: DB.notes, reminders: DB.reminders, payslips: DB.payslips || [], settings: DB.settings } }
+      body: { state: { shifts: DB.shifts, notes: DB.notes, reminders: DB.reminders, payslips: DB.payslips || [], rosters: DB.rosters || [], settings: DB.settings } }
     }).then(r => { if (r && r.ok) { try { localStorage.setItem('st_last_sync', String(Date.now())); } catch (e) {} updateBackupCard(); } }).catch(() => {});
     if (DB.settings.hourlyWage) {
       apiFetch('/api/me', { method: 'PUT', body: { hourlyWage: DB.settings.hourlyWage } }).catch(() => {});
@@ -6517,5 +7094,5 @@ navigateTo = function (page) {
 bootOnlineLayer();
 
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2b2b44b0c65ccd8',t:'MTc4NjczOTI4OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2b5abd6ac6aed16',t:'MTc4Njc3MDM5OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

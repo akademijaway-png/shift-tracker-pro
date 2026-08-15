@@ -276,7 +276,7 @@ app.get(['/manifest.json', '/sw.js', '/icons/icon-192.png', '/icons/icon-512.png
 
 app.get('/api/health', (req, res) => res.json({
   ok: true,
-  v: '1.6',
+  v: '1.7',
   users: db.users.length,
   time: nowISO(),
   backup: {
@@ -304,7 +304,7 @@ app.post('/api/auth/register', (req, res) => {
   const { salt, hash } = hashPassword(password);
   const user = { id: id(), name, email, passHash: hash, salt, hourlyWage: null, avatar: null, createdAt: nowISO(), lastSeen: null };
   db.users.push(user);
-  db.states[user.id] = { shifts: [], notes: [], reminders: [], payslips: [], settings: {} };
+  db.states[user.id] = { shifts: [], notes: [], reminders: [], payslips: [], rosters: [], settings: {} };
 
   const token = crypto.randomBytes(24).toString('hex');
   db.sessions[token] = { userId: user.id, createdAt: nowISO() };
@@ -390,7 +390,7 @@ app.delete('/api/me', auth, (req, res) => {
 
 // ── state sync (shifts / notes / reminders / settings) ──
 app.get('/api/state', auth, (req, res) => {
-  res.json({ state: db.states[req.user.id] || { shifts: [], notes: [], reminders: [], settings: {} } });
+  res.json({ state: db.states[req.user.id] || { shifts: [], notes: [], reminders: [], payslips: [], rosters: [], settings: {} } });
 });
 
 app.put('/api/state', auth, (req, res) => {
@@ -405,11 +405,20 @@ app.put('/api/state', auth, (req, res) => {
     createdAt: String((p && p.createdAt) || ''),
     dataUrl: typeof (p && p.dataUrl) === 'string' && p.dataUrl.length <= 500000 ? p.dataUrl : ''
   })).filter(p => p.id && p.dataUrl) : null;
+  const cleanRosters = Array.isArray(s.rosters) ? s.rosters.slice(0, 12).map(r => ({
+    id: String((r && r.id) || ''),
+    name: String((r && r.name) || 'roster').slice(0, 120),
+    type: r && r.type === 'pdf' ? 'pdf' : 'image',
+    label: String((r && r.label) || '').slice(0, 60),
+    createdAt: String((r && r.createdAt) || ''),
+    dataUrl: typeof (r && r.dataUrl) === 'string' && r.dataUrl.length <= 500000 ? r.dataUrl : ''
+  })).filter(r => r.id && r.dataUrl) : null;
   db.states[req.user.id] = {
     shifts: Array.isArray(s.shifts) ? s.shifts : (cur.shifts || []),
     notes: Array.isArray(s.notes) ? s.notes : (cur.notes || []),
     reminders: Array.isArray(s.reminders) ? s.reminders : (cur.reminders || []),
     payslips: cleanPayslips || (cur.payslips || []),
+    rosters: cleanRosters || (cur.rosters || []),
     settings: (s.settings && typeof s.settings === 'object') ? s.settings : (cur.settings || {})
   };
   saveDB();
