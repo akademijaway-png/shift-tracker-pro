@@ -435,6 +435,18 @@
       max-width: 320px;
     }
 
+    /* ===== v1.16.0 — calm, normal dark chat ===== */
+    .orbs { display: none; } /* the floating rainbow blobs are retired */
+    .chat-wallpaper { opacity: 1; background: radial-gradient(900px 420px at 12% 0%, rgba(74,144,217,0.10), transparent 60%), radial-gradient(900px 420px at 88% 100%, rgba(139,92,246,0.07), transparent 60%); }
+    .message.received { background: var(--slate-700); color: #fff; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 4px 15px rgba(0,0,0,0.35); }
+    .message.sent { box-shadow: 0 4px 15px rgba(0,0,0,0.35); }
+    .chat-input-container { background: rgba(30,58,95,0.92); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1); }
+    .chat-input { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); color: #fff; }
+    .chat-input::placeholder { color: var(--slate-400); }
+    .chat-btn.attach { background: rgba(255,255,255,0.1); color: var(--slate-300); }
+    .empty-chat-bubble { background: rgba(15,23,42,0.92); border: 1px solid rgba(255,255,255,0.14); color: #fff; }
+    .empty-chat-bubble .text-slate-900 { color: #fff; }
+    .empty-chat-bubble .text-slate-500 { color: var(--slate-400); }
     /* ===== History delete buttons ===== */
     .history-delete-btn {
       width: 38px; height: 38px;
@@ -1040,12 +1052,22 @@
         </div>
       </div>
       
+      <!-- 📨 Friend Requests — pinned at the top so no request ever goes unseen (v1.16.0) -->
+      <div class="card mt-4" id="requests-card-messages" style="display: none;">
+        <div class="card-padded">
+          <h3 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
+            <span style="font-size: 18px;">📨</span>
+            Friend Requests
+          </h3>
+          <div id="requests-list-messages"></div>
+        </div>
+      </div>
       <div id="conversations-list" class="pt-4"></div>
     </div>
 
     <!-- Chat Page -->
     <div class="page" id="page-chat" style="height: 100vh; flex-direction: column;">
-      <div class="bg-white border-b" style="padding: 12px 16px; padding-top: max(env(safe-area-inset-top), 12px); display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10;">
+      <div class="border-b" style="background: rgba(30,58,95,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 12px 16px; padding-top: max(env(safe-area-inset-top), 12px); display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10;">
         <button class="header-btn" onclick="navigateTo('messages')">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="15 18 9 12 15 6"></polyline>
@@ -1053,8 +1075,8 @@
         </button>
         <div class="avatar" id="chat-avatar" style="width: 40px; height: 40px; font-size: 14px;"></div>
         <div class="flex-1">
-          <p class="font-bold text-slate-900" id="chat-name"></p>
-          <p class="text-xs text-slate-500" id="chat-status">Online</p>
+          <p class="font-bold text-white" id="chat-name"></p>
+          <p class="text-xs" style="color: var(--slate-300);" id="chat-status">Online</p>
         </div>
       </div>
       
@@ -1080,7 +1102,7 @@
       </div>
       
       <div id="typing-indicator" class="hidden px-4 pb-2">
-        <div class="typing-indicator" style="background: white; width: fit-content; padding: 10px 16px; border-radius: 16px; border: 1px solid var(--slate-100);">
+        <div class="typing-indicator" style="background: var(--slate-700); width: fit-content; padding: 10px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.12);">
           <div class="typing-dot"></div>
           <div class="typing-dot"></div>
           <div class="typing-dot"></div>
@@ -1264,7 +1286,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.15.0 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.16.0 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -1399,7 +1421,7 @@
           <details class="howto-item"><summary>🗓️ Calendar</summary><p><b>‹ ›</b> = previous / next month, <b>« »</b> = jump a whole year. ★ = Maltese public holiday (special pay 💶). Tap any day to see its shifts, notes and reminders.</p></details>
           <details class="howto-item"><summary>💶 Wage &amp; pay rules</summary><p>Settings → <b>💶 My Hourly Wage</b>: set your €/hour and tick what your workplace pays (Sunday ×2, holidays, rest days, overtime). Pay is then counted automatically on every shift. Home → <b>🧮 Pay Calc</b> = quick what-if maths. 🍔 <b>Unpaid break?</b> Tick it in any shift form (add / edit / auto) or right here in Pay Calc — those minutes come straight off the paid time, e.g. 12h − 30m = 11.5h paid. <b>Same break every day?</b> Settings → <b>💶 My Hourly Wage</b> → tick <b>🍔 Unpaid break</b> and set the minutes once — every NEW shift (⏱️ Start/Finish too, plus auto rules) starts with it ticked; you can still change or untick it per shift. 🗓️ <b>Payday tracking?</b> Settings → <b>🗓️ Payday</b> → tick <b>Enable</b> → pick your payday day (or set the exact next date). The dashboard then shows the <b>calendar month AND the payday period</b> (like 15 Aug → 14 Sep), and <b>📜 Salary History</b> keeps every finished period with its full maths — the normal monthly payslip stays exactly as it was.</p></details>
           <details class="howto-item"><summary>📄 Payslips &amp; 📋 rosters</summary><p>My Earnings → <b>📄 Payslip</b>: the app BUILDS your payslip from your hours (⬇️ CSV for Excel, or 🖨️ Print → Save as PDF). My Earnings → <b>📎 Upload Payslip</b>: add the payslip your employer gives you (photo or PDF) so everything sits in one safe place. My Earnings → <b>📋 Upload Roster</b>: keep the roster your boss gives out (photo or PDF) — tag it like “17–30 August” and find it any time under <b>My Roster Files</b>.</p></details>
-          <details class="howto-item"><summary>💬 Co-workers &amp; chat</summary><p>👥 Co-workers → find a name → <b>Add Friend</b>. After they accept, chat in 💬 Messages — messages arrive even when their app is closed.</p></details>
+          <details class="howto-item"><summary>💬 Co-workers &amp; chat</summary><p>👥 Co-workers → find a name → <b>Add Friend</b>. When someone adds <b>you</b>, the request waits for you at the TOP of 💬 Messages (and in 👥 Co-workers) with <b>Accept / Decline</b> — the red dot on Messages counts requests too. After accepting, chat in 💬 Messages — messages arrive even when their app is closed.</p></details>
           <details class="howto-item"><summary>🔔 Notifications</summary><p>Settings → <b>🔔 Push Notifications</b> → Enable → then 📣 Send test to try it. 🍏 iPhone: first Share → <b>Add to Home Screen</b>, then open the app from there.</p></details>
           <details class="howto-item"><summary>☁️ Backup &amp; new phone</summary><p>Everything saves to your account automatically (green ☁️ Cloud Backup card). New or lost phone: install the app, <b>sign in</b> — your wage, shifts, pay rules, notes and payslip files come back by themselves. 📱→📲</p></details>
         </div>
@@ -3128,6 +3150,12 @@
     }
 
     // ==================== MESSAGES BADGE ====================
+    // 📨 Friend Requests card on the Messages page (v1.16.0).
+    // Offline face shows nothing — the online layer replaces this with the real one.
+    function renderMessageRequests() {
+      const card = document.getElementById('requests-card-messages');
+      if (card) card.style.display = 'none';
+    }
     function updateMessagesBadge() {
       const badge = document.getElementById('msg-badge');
       if (!badge || !DB.user) return;
@@ -3906,6 +3934,7 @@
     let currentConversation = null;
 
     function refreshMessages() {
+      try { renderMessageRequests(); } catch (e) {} // 📨 v1.16.0
       const listEl = document.getElementById('conversations-list');
       updateMessagesBadge();
       
@@ -6493,6 +6522,7 @@ function renderSocialUI(soft) {
   refreshFriendsList();
   if (currentPage === 'coworkers' || !soft) refreshCoworkers();
   if (currentPage === 'messages') renderConversationsList();
+  renderMessageRequests(); // 📨 v1.16.0
   updateMessagesBadge();
 }
 
@@ -6629,6 +6659,7 @@ function refreshMessages() {
   if (!ONLINE.active) { OFFLINE_IMPL.refreshMessages(); return; }
   refreshServerConversations(true); // refresh in background
   renderConversationsList();        // instant paint with cache
+  renderMessageRequests();          // 📨 v1.16.0 — pinned requests card
 }
 
 async function refreshServerConversations(soft) {
@@ -6647,6 +6678,32 @@ async function refreshServerConversations(soft) {
   ONLINE.unreadKnown = true;
   ONLINE.totalUnread = newUnread;
   renderConversationsList();
+  updateMessagesBadge();
+}
+
+// 📨 v1.16.0 — incoming friend requests pinned at the top of the Messages page,
+// so a request can NEVER appear-and-disappear unseen again.
+function renderMessageRequests() {
+  const card = document.getElementById('requests-card-messages');
+  const list = document.getElementById('requests-list-messages');
+  if (!card || !list) return;
+  if (!ONLINE.active || !ONLINE.incoming.length) {
+    card.style.display = 'none';
+    list.innerHTML = '';
+    updateMessagesBadge();
+    return;
+  }
+  list.innerHTML = ONLINE.incoming.map(r => `
+    <div class="friend-row">
+      <div class="avatar">${avatarInnerHTML(r.user)}</div>
+      <div class="flex-1 min-w-0">
+        <p class="font-bold text-slate-900" style="font-size: 15px;">${escapeHtml(r.user.name)}</p>
+        <p class="text-xs text-slate-500">${escapeHtml(r.user.email)} · wants to be friends</p>
+      </div>
+      <button class="btn btn-success friend-btn" onclick="respondServerRequest('${r.id}', true)">Accept</button>
+      <button class="btn friend-btn" style="background: var(--slate-200); color: var(--slate-600);" onclick="respondServerRequest('${r.id}', false)">Decline</button>
+    </div>`).join('');
+  card.style.display = 'block';
   updateMessagesBadge();
 }
 
@@ -6815,7 +6872,7 @@ function updateMessagesBadge() {
   if (!badge || !DB.user) return;
   if (!ONLINE.active) { OFFLINE_IMPL.updateMessagesBadge(); return; }
   const localBotUnread = DB.messages.filter(m => !m.read && m.senderId !== DB.user.id).length;
-  const total = localBotUnread + ONLINE.totalUnread;
+  const total = localBotUnread + ONLINE.totalUnread + (ONLINE.incoming ? ONLINE.incoming.length : 0); // 📨 v1.16.0: requests count too
   badge.textContent = total;
   badge.classList.toggle('hidden', total === 0);
 }
@@ -7154,5 +7211,5 @@ navigateTo = function (page) {
 bootOnlineLayer();
 
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2ba38cfe971eddb',t:'MTc4NjgxODExNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2ba555c0fe3cd75',t:'MTc4NjgxOTI4Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
