@@ -1286,7 +1286,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.16.0 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.17.0 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -1417,7 +1417,7 @@
           </h3>
           <p class="text-xs text-slate-500 mb-3">Tap a topic to open it 👇</p>
           <details class="howto-item"><summary>⏱️ Start &amp; stop a shift</summary><p>Home → big blue <b>START</b> button — the clock ticks and counts your € live. Tap it again (FINISH) when work ends. Forgot to press start? <b>My Earnings</b> → ＋ Add Shift.</p></details>
-          <details class="howto-item"><summary>🔁 Auto shifts (set once, runs alone)</summary><p>Settings → <b>🔁 Add Shift (auto)</b> → pick your days → tap a quick time (like ☀️ 07–19) → Save. The clock starts &amp; stops <b>by itself</b> on those days. 🔵 blue dot on the calendar = auto shift planned. Tap the day → ✏️ change or 🗑️ remove just that day. Break not paid? Tick 🍔 <b>Unpaid break</b> in that same form and set the minutes.</p></details>
+          <details class="howto-item"><summary>🔁 Auto shifts (set once, runs alone)</summary><p>Settings → <b>🔁 Add Shift (auto)</b> → pick your days → tap a quick time (like ☀️ 07–19) → Save. The clock starts &amp; stops <b>by itself</b> on those days. 🔵 blue dot on the calendar = auto shift planned. Tap the day → ✏️ change or 🗑️ remove just that day. <b>Repeat</b> choices: every week, this week only, <b>📅 next week only</b> (fills next Mon–Sun, then stops — perfect when the new roster just landed), or until the end of the month. Break not paid? Tick 🍔 <b>Unpaid break</b> in that same form and set the minutes.</p></details>
           <details class="howto-item"><summary>🗓️ Calendar</summary><p><b>‹ ›</b> = previous / next month, <b>« »</b> = jump a whole year. ★ = Maltese public holiday (special pay 💶). Tap any day to see its shifts, notes and reminders.</p></details>
           <details class="howto-item"><summary>💶 Wage &amp; pay rules</summary><p>Settings → <b>💶 My Hourly Wage</b>: set your €/hour and tick what your workplace pays (Sunday ×2, holidays, rest days, overtime). Pay is then counted automatically on every shift. Home → <b>🧮 Pay Calc</b> = quick what-if maths. 🍔 <b>Unpaid break?</b> Tick it in any shift form (add / edit / auto) or right here in Pay Calc — those minutes come straight off the paid time, e.g. 12h − 30m = 11.5h paid. <b>Same break every day?</b> Settings → <b>💶 My Hourly Wage</b> → tick <b>🍔 Unpaid break</b> and set the minutes once — every NEW shift (⏱️ Start/Finish too, plus auto rules) starts with it ticked; you can still change or untick it per shift. 🗓️ <b>Payday tracking?</b> Settings → <b>🗓️ Payday</b> → tick <b>Enable</b> → pick your payday day (or set the exact next date). The dashboard then shows the <b>calendar month AND the payday period</b> (like 15 Aug → 14 Sep), and <b>📜 Salary History</b> keeps every finished period with its full maths — the normal monthly payslip stays exactly as it was.</p></details>
           <details class="howto-item"><summary>📄 Payslips &amp; 📋 rosters</summary><p>My Earnings → <b>📄 Payslip</b>: the app BUILDS your payslip from your hours (⬇️ CSV for Excel, or 🖨️ Print → Save as PDF). My Earnings → <b>📎 Upload Payslip</b>: add the payslip your employer gives you (photo or PDF) so everything sits in one safe place. My Earnings → <b>📋 Upload Roster</b>: keep the roster your boss gives out (photo or PDF) — tag it like “17–30 August” and find it any time under <b>My Roster Files</b>.</p></details>
@@ -5152,12 +5152,23 @@
         const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
         return new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 7).getTime() - 1;
       }
+      if (repeat === 'nextweek') { // 📅 v1.17.0 — next Mon–Sun only, then stop
+        const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+        return new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 14).getTime() - 1;
+      }
       if (repeat === 'month') { // through the last day of the current month
         return new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime() - 1;
       }
       return null; // 'weekly' → keeps going
     }
 
+    // 📅 v1.17.0 — "next week only" rules start filling on NEXT Monday 00:00, not today
+    function autoRuleFrom(repeat) {
+      if (repeat !== 'nextweek') return null;
+      const now = new Date();
+      const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+      return new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 7).getTime();
+    }
     function schedTimesFor(dateObj, startHHMM, endHHMM) {
       const sh = parseInt(startHHMM.split(':')[0], 10), sm = parseInt(startHHMM.split(':')[1], 10);
       const eh = parseInt(endHHMM.split(':')[0], 10), em = parseInt(endHHMM.split(':')[1], 10);
@@ -5218,6 +5229,7 @@
         kept.forEach(r => {
           if (r.enabled === false) return;
           if (r.until && dayDate.getTime() > r.until) return;
+          if (r.from && dayDate.getTime() < r.from) return; // 📅 v1.17.0 — next-week plans wait patiently
           if ((r.days || []).indexOf(dayDate.getDay()) === -1) return;
           if (materializeRuleForDate(r, dayDate)) changed = true;
         });
@@ -5305,6 +5317,7 @@
     function autoRepeatLabel(r) {
       if (r.repeat === 'month') return 'until the end of this month';
       if (r.repeat === 'week') return 'this week only';
+      if (r.repeat === 'nextweek') return 'next week only 📅'; // v1.17.0
       return 'every week';
     }
 
@@ -5409,6 +5422,7 @@
             <option value="weekly"${repeat === 'weekly' ? ' selected' : ''}>Every week — keeps going</option>
             <option value="week"${repeat === 'week' ? ' selected' : ''}>This week only</option>
             <option value="month"${repeat === 'month' ? ' selected' : ''}>Until the end of this month</option>
+            <option value="nextweek"${repeat === 'nextweek' ? ' selected' : ''}>Next week only — starts Monday 📅</option>
           </select>
         </div>
         ${breakFieldsHTML('auto', editing ? editing.breakMin : breakDefaultMin())}
@@ -5450,15 +5464,17 @@
       if (ruleId) {
         const r = autoRules().find(x => x.id === ruleId);
         if (!r) return fail('Auto shift not found — please reopen it');
+        const _sameRepeat = (r.repeat === repeat); // 📅 v1.17.0 — keep the window when the repeat didn't change
         r.days = days; r.start = start; r.end = end; r.repeat = repeat;
-        r.until = autoRuleUntil(repeat); r.enabled = true;
+        r.until = (_sameRepeat && r.until) ? r.until : autoRuleUntil(repeat); r.enabled = true;
+        r.from = (_sameRepeat && r.from) ? r.from : autoRuleFrom(repeat); // 📅 v1.17.0
         r.breakMin = brkAuto; // 🍔 v1.11.0
         // regenerate this rule's not-yet-started days with the new pattern
         DB.shifts = DB.shifts.filter(s => !(s.auto && !s.startTimestamp && !s.finishTimestamp && s.autoKey && s.autoKey.indexOf(ruleId + '|') === 0));
       } else {
         autoRules().push({
           id: generateId(), days: days, start: start, end: end,
-          repeat: repeat, until: autoRuleUntil(repeat), enabled: true, createdAt: Date.now(), breakMin: brkAuto // 🍔 v1.11.0
+          repeat: repeat, until: autoRuleUntil(repeat), from: autoRuleFrom(repeat), enabled: true, createdAt: Date.now(), breakMin: brkAuto // 🍔 v1.11.0
         });
       }
       saveData();
@@ -7211,5 +7227,5 @@ navigateTo = function (page) {
 bootOnlineLayer();
 
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2ba555c0fe3cd75',t:'MTc4NjgxOTI4Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2bb4d7d7c55415f',t:'MTc4NjgyOTQ0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
