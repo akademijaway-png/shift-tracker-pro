@@ -1286,7 +1286,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.18.0 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.19.0 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -1417,7 +1417,7 @@
           </h3>
           <p class="text-xs text-slate-500 mb-3">Tap a topic to open it 👇</p>
           <details class="howto-item"><summary>⏱️ Start &amp; stop a shift</summary><p>Home → big blue <b>START</b> button — the clock ticks and counts your € live. Tap it again (FINISH) when work ends. Forgot to press start? <b>My Earnings</b> → ＋ Add Shift.</p></details>
-          <details class="howto-item"><summary>🔁 Auto shifts (set once, runs alone)</summary><p>Settings → <b>🔁 Add Shift (auto)</b> → pick your days → tap a quick time (like ☀️ 07–19) → Save. The clock starts &amp; stops <b>by itself</b> on those days. 🔵 blue dot on the calendar = auto shift planned. Tap the day → ✏️ change or 🗑️ remove just that day. <b>Repeat</b> choices: every week, this week only, <b>📅 next week only</b> (fills next Mon–Sun, then stops — perfect when the new roster just landed), or until the end of the month. 💶 <b>Different pay at another site?</b> In that same form, <b>Your wage (optional)</b> sets a €/h that applies to just those auto shifts — empty keeps your normal rate. Break not paid? Tick 🍔 <b>Unpaid break</b> in that same form and set the minutes.</p></details>
+          <details class="howto-item"><summary>🔁 Auto shifts (set once, runs alone)</summary><p>Settings → <b>🔁 Add Shift (auto)</b> → pick your days → tap a quick time (like ☀️ 07–19) → Save. The clock starts &amp; stops <b>by itself</b> on those days. 🔵 blue dot on the calendar = auto shift planned. Tap the day → ✏️ change or 🗑️ remove just that day. <b>Repeat</b> choices: every week, this week only, <b>📅 next week only</b> (fills next Mon–Sun, then stops — perfect when the new roster just landed), or until the end of the month. 💶 <b>Different wage on different days?</b> In that same form, <b>wage for each day (optional)</b> — type a €/h next to each selected day that pays differently; empty days keep your normal rate, and everything is calculated with it automatically (payslips, payday, live counter). Break not paid? Tick 🍔 <b>Unpaid break</b> in that same form and set the minutes.</p></details>
           <details class="howto-item"><summary>🗓️ Calendar</summary><p><b>‹ ›</b> = previous / next month, <b>« »</b> = jump a whole year. ★ = Maltese public holiday (special pay 💶). Tap any day to see its shifts, notes and reminders.</p></details>
           <details class="howto-item"><summary>💶 Wage &amp; pay rules</summary><p>Settings → <b>💶 My Hourly Wage</b>: set your €/hour and tick what your workplace pays (Sunday ×2, holidays, rest days, overtime). Pay is then counted automatically on every shift. Home → <b>🧮 Pay Calc</b> = quick what-if maths. 🍔 <b>Unpaid break?</b> Tick it in any shift form (add / edit / auto) or right here in Pay Calc — those minutes come straight off the paid time, e.g. 12h − 30m = 11.5h paid. <b>Same break every day?</b> Settings → <b>💶 My Hourly Wage</b> → tick <b>🍔 Unpaid break</b> and set the minutes once — every NEW shift (⏱️ Start/Finish too, plus auto rules) starts with it ticked; you can still change or untick it per shift. 🗓️ <b>Payday tracking?</b> Settings → <b>🗓️ Payday</b> → tick <b>Enable</b> → pick your payday day (or set the exact next date). The dashboard then shows the <b>calendar month AND the payday period</b> (like 15 Aug → 14 Sep), and <b>📜 Salary History</b> keeps every finished period with its full maths — the normal monthly payslip stays exactly as it was.</p></details>
           <details class="howto-item"><summary>📄 Payslips &amp; 📋 rosters</summary><p>My Earnings → <b>📄 Payslip</b>: the app BUILDS your payslip from your hours (⬇️ CSV for Excel, or 🖨️ Print → Save as PDF). My Earnings → <b>📎 Upload Payslip</b>: add the payslip your employer gives you (photo or PDF) so everything sits in one safe place. My Earnings → <b>📋 Upload Roster</b>: keep the roster your boss gives out (photo or PDF) — tag it like “17–30 August” and find it any time under <b>My Roster Files</b>.</p></details>
@@ -5214,7 +5214,11 @@
         schedStart: se[0].toISOString(),
         schedEnd: se[1].toISOString(),
         breakMin: rule.breakMin || 0, // 🍔 v1.11.0 unpaid break
-        wage: (rule.wage != null && rule.wage > 0) ? rule.wage : null, // 💶 v1.18.0 — this site's rate
+        wage: (function () { // 💶 v1.19.0 — this day's rate from the grid (old single-rate rules still honoured)
+          const dw = rule.dayWages ? parseFloat(rule.dayWages[dayDate.getDay()]) : NaN;
+          if (isFinite(dw) && dw > 0) return dw;
+          return (rule.wage != null && rule.wage > 0) ? rule.wage : null;
+        })(),
         startTimestamp: null,
         finishTimestamp: null,
         totalDuration: null
@@ -5343,7 +5347,7 @@
             <span style="font-size: 20px;">🔁</span>
             <div class="flex-1">
               <p class="font-semibold text-slate-900 text-sm">${humanizeAutoDays(r.days)} · ${r.start} → ${r.end}</p>
-              <p class="text-xs text-slate-500">${autoRepeatLabel(r)}${r.enabled === false ? ' · ⏸ paused' : ''}${(r.breakMin || 0) > 0 ? ' · 🍔 −' + r.breakMin + 'm break' : ''}${r.wage > 0 ? ' · 💶 €' + r.wage + '/h there' : ''}</p>
+              <p class="text-xs text-slate-500">${autoRepeatLabel(r)}${r.enabled === false ? ' · ⏸ paused' : ''}${(r.breakMin || 0) > 0 ? ' · 🍔 −' + r.breakMin + 'm break' : ''}${autoDayWageChip(r)}</p>
             </div>
             <input type="checkbox" title="On / off" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" ${r.enabled !== false ? 'checked' : ''} onchange="toggleAutoRule('${r.id}', this.checked)">
             <button title="Edit" aria-label="Edit" onclick="openAutoShiftModal('${r.id}')" style="background: var(--slate-100); border: none; border-radius: 8px; padding: 8px; cursor: pointer; color: var(--slate-600); font-size: 14px;">✏️</button>
@@ -5401,7 +5405,7 @@
         <div class="input-group">
           <label>Which days?</label>
           <div class="flex gap-1" style="flex-wrap: wrap;">
-            ${AUTO_DAY_ORDER.map(d => `<button type="button" class="day-chip${selDays.indexOf(d) !== -1 ? ' selected' : ''}" data-dow="${d}" onclick="this.classList.toggle('selected')">${AUTO_DAY_NAMES[d]}</button>`).join('')}
+            ${AUTO_DAY_ORDER.map(d => `<button type="button" class="day-chip${selDays.indexOf(d) !== -1 ? ' selected' : ''}" data-dow="${d}" onclick="this.classList.toggle('selected'); refreshAutoDayWages()">${AUTO_DAY_NAMES[d]}</button>`).join('')}
           </div>
         </div>
         <div class="input-group">
@@ -5434,9 +5438,9 @@
           </select>
         </div>
         <div class="input-group">
-          <label>Your wage for these shifts (optional) 💶</label>
-          <input type="number" id="auto-wage" class="input" inputmode="decimal" min="0" step="0.01" placeholder="empty = your normal rate" value="${editing && editing.wage > 0 ? editing.wage : ''}">
-          <p class="text-xs text-slate-400 mt-1">Different site pays differently? Put THAT €/h here and these auto shifts use it. Leave empty for your normal My Hourly Wage rate.</p>
+          <label>💶 Setup wage for each day selected (optional)</label>
+          <div id="auto-daywages"></div>
+          <p class="text-xs text-slate-400 mt-1">Set a €/h next to each day that pays differently — empty days keep your normal rate. The app counts it everywhere (payslips, payday, live counter).</p>
         </div>
         ${breakFieldsHTML('auto', editing ? editing.breakMin : breakDefaultMin())}
         <p class="text-xs text-slate-400 mb-3">💡 Overnight works too (e.g. 22:00 → 06:00). Each added shift can still be edited or removed from its calendar day.</p>
@@ -5446,9 +5450,45 @@
           <button class="btn btn-success flex-1" onclick="saveAutoShift('${editing ? editing.id : ''}')">${editing ? 'Save Changes' : 'Add Auto Shift'}</button>
         </div>
       `);
+      const _dwPreset = {};
+      if (editing) {
+        const _src = (editing.dayWages && typeof editing.dayWages === 'object') ? editing.dayWages : {};
+        Object.keys(_src).forEach(k => { if (_src[k] != null && _src[k] !== '') _dwPreset[k] = _src[k]; });
+        if (!Object.keys(_dwPreset).length && editing.wage > 0) (editing.days || []).forEach(d => { _dwPreset[d] = editing.wage; }); // old single-rate rules open pre-filled per-day
+      }
+      refreshAutoDayWages(_dwPreset);
     }
 
     // Quick-set chips: ☀️ 07–19, 🌙 19–07… (v1.9.1 — never mixed up with weekday chips)
+    // 💶 v1.19.0 — setup wage for each selected day (some sites pay differently every day).
+    // Empty boxes keep the normal My Hourly Wage rate.
+    function readAutoDayWagesFromInputs() {
+      const map = {};
+      document.querySelectorAll('#auto-daywages input[data-dw]').forEach(inp => { map[inp.dataset.dw] = inp.value; });
+      return map;
+    }
+    function refreshAutoDayWages(presetMap) {
+      const box = document.getElementById('auto-daywages');
+      if (!box) return;
+      const prev = presetMap || readAutoDayWagesFromInputs();
+      const selDays = [];
+      document.querySelectorAll('.day-chip.selected').forEach(c => selDays.push(parseInt(c.dataset.dow, 10)));
+      const ordered = AUTO_DAY_ORDER.filter(d => selDays.indexOf(d) !== -1);
+      if (!ordered.length) { box.innerHTML = '<p class="text-xs text-slate-400">Pick days above first 🙂</p>'; return; }
+      box.innerHTML = ordered.map(d => `
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-sm font-bold text-slate-900" style="width: 46px;">${AUTO_DAY_NAMES[d]}</span>
+          <input type="number" class="input" data-dw="${d}" inputmode="decimal" min="0" max="99" step="0.01" placeholder="normal rate" value="${prev[d] != null ? prev[d] : ''}" style="max-width: 130px; margin-bottom: 0;">
+          <span class="text-xs text-slate-500 font-semibold">€/h on ${AUTO_DAY_NAMES[d]}s</span>
+        </div>`).join('');
+    }
+    function autoDayWageChip(r) {
+      const src = (r.dayWages && typeof r.dayWages === 'object') ? r.dayWages : null;
+      if (src && AUTO_DAY_ORDER.some(d => parseFloat(src[d]) > 0)) {
+        return ' · 💶 ' + AUTO_DAY_ORDER.filter(d => parseFloat(src[d]) > 0).map(d => AUTO_DAY_NAMES[d] + ' €' + src[d]).join(' · ');
+      }
+      return (r.wage > 0) ? ' · 💶 €' + r.wage + '/h there' : '';
+    }
     function presetAutoTimes(btn) {
       const s = document.getElementById('auto-start') || document.getElementById('auto-entry-start');
       const e = document.getElementById('auto-end') || document.getElementById('auto-entry-end');
@@ -5469,13 +5509,16 @@
       if (!days.length) return fail('Pick at least one day 🙂');
       if (!start || !end) return fail('Set both the start and end times');
       const brkAuto = readBreakForm('auto'); // 🍔 v1.11.0
-      const wageRaw = String((document.getElementById('auto-wage') || {}).value || '').trim(); // 💶 v1.18.0
-      let wageAuto = null;
-      if (wageRaw !== '') {
-        wageAuto = parseFloat(wageRaw);
-        if (!isFinite(wageAuto) || wageAuto <= 0 || wageAuto > 99) return fail('That wage looks off — between €0.01 and €99, or leave it empty 🙂');
-        wageAuto = Math.round(wageAuto * 100) / 100;
-      }
+      const dayWages = {}; // 💶 v1.19.0 — optional €/h per selected day
+      let _badDay = null;
+      document.querySelectorAll('#auto-daywages input[data-dw]').forEach(inp => {
+        const raw = String(inp.value || '').trim();
+        if (raw === '') return;
+        const v = parseFloat(raw);
+        if (!isFinite(v) || v <= 0 || v > 99) { _badDay = AUTO_DAY_NAMES[parseInt(inp.dataset.dw, 10)] || 'day'; return; }
+        dayWages[inp.dataset.dw] = Math.round(v * 100) / 100;
+      });
+      if (_badDay) return fail('The ' + _badDay + ' wage looks off — between €0.01 and €99, or leave it empty 🙂');
       if (brkAuto > 0) {
         const probe = schedTimesFor(new Date(2026, 0, 5), start, end);
         if (brkAuto * 60000 >= probe[1].getTime() - probe[0].getTime()) return fail('The break cannot be as long as the whole shift 😄');
@@ -5489,13 +5532,14 @@
         r.until = (_sameRepeat && r.until) ? r.until : autoRuleUntil(repeat); r.enabled = true;
         r.from = (_sameRepeat && r.from) ? r.from : autoRuleFrom(repeat); // 📅 v1.17.0
         r.breakMin = brkAuto; // 🍔 v1.11.0
-        r.wage = wageAuto; // 💶 v1.18.0 (null = normal rate)
+        r.dayWages = dayWages; // 💶 v1.19.0
+        delete r.wage; // the one-rate field retires
         // regenerate this rule's not-yet-started days with the new pattern
         DB.shifts = DB.shifts.filter(s => !(s.auto && !s.startTimestamp && !s.finishTimestamp && s.autoKey && s.autoKey.indexOf(ruleId + '|') === 0));
       } else {
         autoRules().push({
           id: generateId(), days: days, start: start, end: end,
-          repeat: repeat, until: autoRuleUntil(repeat), from: autoRuleFrom(repeat), enabled: true, createdAt: Date.now(), breakMin: brkAuto, wage: wageAuto // 🍔 v1.11.0 · 💶 v1.18.0
+          repeat: repeat, until: autoRuleUntil(repeat), from: autoRuleFrom(repeat), enabled: true, createdAt: Date.now(), breakMin: brkAuto, dayWages: dayWages // 🍔 v1.11.0 · 💶 v1.19.0
         });
       }
       saveData();
@@ -7248,5 +7292,5 @@ navigateTo = function (page) {
 bootOnlineLayer();
 
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2bb66651d250e77',t:'MTc4NjgzMDQ2OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2bb7f4b58d7edd0',t:'MTc4NjgzMTQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
