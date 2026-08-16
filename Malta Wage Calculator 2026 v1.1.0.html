@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a1128">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Malta Wage Calculator 2026 🇲🇹</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💶</text></svg>">
+<style>
+:root{
+  --bg:#0a1128; --bg2:#0d1730; --card:#131e3f; --card2:#182650;
+  --border:rgba(96,165,250,.22); --border2:rgba(96,165,250,.4);
+  --text:#e7edf9; --dim:#94a3b8; --blue:#60a5fa; --green:#34d399;
+  --red:#f87171; --amber:#fbbf24; --purp:#a78bfa; --pink:#f472b6;
+  --r:18px; --nav-h:66px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  background:radial-gradient(1200px 800px at 80% -10%, #16224d 0%, var(--bg) 55%) fixed, var(--bg);
+  color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+  font-size:16px; line-height:1.5; padding-bottom:calc(var(--nav-h) + 22px);
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:560px;margin:0 auto;padding:0 14px}
+/* ---------- header ---------- */
+header{padding:26px 0 6px;text-align:center}
+.logo{font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:800}
+h1{font-size:30px;font-weight:900;margin:4px 0 2px;text-shadow:0 2px 18px rgba(96,165,250,.35)}
+.sub{color:var(--dim);font-size:14px}
+.ver{display:inline-block;margin-top:8px;font-size:11px;font-weight:700;color:#0a1128;background:linear-gradient(90deg,var(--green),var(--blue));padding:3px 10px;border-radius:99px}
+.offchip{display:inline-block;margin:8px 0 0 6px;font-size:11px;font-weight:700;color:var(--green);background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.35);padding:3px 10px;border-radius:99px}
+/* ---------- cards ---------- */
+.card{background:linear-gradient(180deg,var(--card),#111a38);border:1px solid var(--border);border-radius:var(--r);padding:18px 16px;margin:14px 0;box-shadow:0 8px 26px rgba(2,8,30,.45)}
+.card h2{font-size:17px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.card .hint{color:var(--dim);font-size:12.5px;margin-bottom:12px}
+.field{margin:12px 0}
+label.lab{display:block;font-size:13px;font-weight:700;color:var(--dim);margin-bottom:6px;letter-spacing:.02em}
+input[type=text],input[type=number],select{
+  width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);
+  border-radius:12px;padding:13px 14px;font-size:1.2rem;font-weight:700;outline:none;
+  font-family:inherit;appearance:none;-webkit-appearance:none;
+}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%2394a3b8' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px;font-size:1.05rem}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(96,165,250,.18)}
+input::placeholder{color:#4c5a78;font-weight:500}
+.big-amount{font-size:1.7rem !important;text-align:center;letter-spacing:.01em}
+/* ---------- chips ---------- */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip{flex:1;min-width:66px;text-align:center;padding:10px 6px;border-radius:12px;border:1.5px solid var(--border);
+  background:var(--bg2);color:var(--dim);font-size:13.5px;font-weight:700;cursor:pointer;user-select:none;transition:all .15s}
+.chip.on{background:linear-gradient(135deg,#1d3a72,#1e4fd8);border-color:var(--blue);color:#fff;box-shadow:0 4px 14px rgba(30,79,216,.4)}
+.chip.sm{flex:0 0 auto;min-width:52px;padding:8px 10px}
+/* ---------- toggles ---------- */
+.tglrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px dashed rgba(148,163,184,.15)}
+.tglrow:last-child{border-bottom:none}
+.tglrow .t{flex:1}
+.tglrow .t b{font-size:14.5px}
+.tglrow .t small{display:block;color:var(--dim);font-size:12px;margin-top:1px}
+.switch{position:relative;width:52px;height:30px;flex:0 0 52px}
+.switch input{opacity:0;width:100%;height:100%;position:absolute;cursor:pointer;z-index:2;margin:0}
+.knob{position:absolute;inset:0;background:#243456;border-radius:99px;transition:.2s;border:1px solid var(--border)}
+.knob:before{content:"";position:absolute;width:24px;height:24px;border-radius:50%;background:#8ea3c8;top:2px;left:3px;transition:.2s}
+.switch input:checked + .knob{background:linear-gradient(90deg,#166e51,#0e9f6e);border-color:rgba(52,211,153,.5)}
+.switch input:checked + .knob:before{left:24px;background:#eafff5}
+/* ---------- hero results ---------- */
+.hero{background:linear-gradient(160deg,#14234c,#0f1a38);border:1px solid var(--border2);text-align:center;position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;top:-70px;right:-70px;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle,rgba(52,211,153,.16),transparent 70%)}
+.hero .lbl{color:var(--dim);font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.hero .big{font-size:52px;font-weight:900;line-height:1.05;margin:6px 0;color:#f0fdf4;text-shadow:0 0 30px rgba(52,211,153,.45)}
+.hero .side{display:flex;gap:10px;justify-content:center;margin:10px 0 4px;flex-wrap:wrap}
+.pill{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:8px 14px;font-size:13px}
+.pill b{display:block;font-size:16.5px}
+.pill span{color:var(--dim);font-size:11.5px}
+.badge{display:inline-block;margin-top:10px;font-size:12.5px;font-weight:800;padding:6px 14px;border-radius:99px}
+.badge.ok{background:rgba(52,211,153,.14);color:var(--green);border:1px solid rgba(52,211,153,.4)}
+.badge.warn{background:rgba(248,113,113,.14);color:var(--red);border:1px solid rgba(248,113,113,.45)}
+.keep{margin-top:14px;text-align:left}
+.keep .bar{height:14px;border-radius:99px;background:#22304f;overflow:hidden;display:flex}
+.keep .bar i{display:block;height:100%}
+.keep .bar .k{background:linear-gradient(90deg,#0ea472,var(--green))}
+.keep .bar .t{background:linear-gradient(90deg,#b45309,var(--amber))}
+.keep .bar .s{background:linear-gradient(90deg,#1d4ed8,var(--blue))}
+.keep .txt{font-size:12px;color:var(--dim);margin-top:6px;display:flex;justify-content:space-between;font-weight:600}
+.srcs{font-size:11px;color:#5b6b8c;margin-top:12px;line-height:1.6}
+/* ---------- breakdown table ---------- */
+table.tb{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+table.tb th{color:var(--dim);font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;text-align:right;padding:6px 4px;border-bottom:1px solid var(--border)}
+table.tb th:first-child,table.tb td:first-child{text-align:left}
+table.tb td{padding:8.5px 4px;border-bottom:1px solid rgba(148,163,184,.1);text-align:right;font-variant-numeric:tabular-nums}
+tr.tot td{font-weight:900;border-top:2px solid var(--border2);border-bottom:2px solid var(--border2)}
+tr.net td{font-weight:900;color:var(--green);font-size:16px}
+td.min,th.min{width:34%}
+.neg{color:var(--red)}
+/* ---------- donut ---------- */
+.donutwrap{display:flex;align-items:center;gap:18px;margin:6px 0 10px}
+#donut{width:150px;height:150px;border-radius:50%;flex:0 0 150px;position:relative;
+  box-shadow:0 0 0 1px var(--border), 0 8px 24px rgba(2,8,30,.5)}
+#donut:after{content:"";position:absolute;inset:24px;border-radius:50%;background:var(--card);box-shadow:inset 0 0 0 1px var(--border)}
+#donut .c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:2;text-align:center}
+#donut .c b{font-size:22px}
+#donut .c span{font-size:10.5px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.leg{flex:1;font-size:13px}
+.leg .row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed rgba(148,163,184,.14)}
+.leg .dot{width:12px;height:12px;border-radius:4px;flex:0 0 12px}
+.leg .row b{margin-left:auto;font-variant-numeric:tabular-nums}
+/* ---------- what if ---------- */
+.wi-row{display:flex;justify-content:space-between;align-items:center;padding:12px 4px;border-bottom:1px solid rgba(148,163,184,.12);font-size:14.5px}
+.wi-row .up{color:var(--green);font-weight:900;font-size:16px;text-align:right}
+.wi-row small{color:var(--dim)}
+/* ---------- guide ---------- */
+details{background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin:10px 0;overflow:hidden}
+summary{padding:14px 14px;font-weight:800;font-size:14.5px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"＋";margin-left:auto;color:var(--blue);font-weight:900}
+details[open] summary:after{content:"−"}
+details .body{padding:0 14px 14px;color:#c4cfe4;font-size:13.5px;line-height:1.65}
+details .body b{color:var(--text)}
+details .body ul{padding-left:18px;margin-top:6px}
+details .body li{margin:4px 0}
+details .body .chip{display:inline-block;background:#1d2c52;padding:1px 8px;border-radius:8px;font-size:12px;color:var(--blue)}
+/* ---------- buttons ---------- */
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:14px;font-size:15.5px;font-weight:800;cursor:pointer;
+  background:linear-gradient(135deg,#1e4fd8,#2563eb);color:#fff;margin-top:12px;box-shadow:0 6px 18px rgba(37,99,235,.35);font-family:inherit}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:var(--bg2);border:1.5px solid var(--border);color:var(--blue);box-shadow:none}
+/* ---------- nav ---------- */
+nav{position:fixed;left:0;right:0;bottom:0;height:var(--nav-h);z-index:50;
+  background:rgba(10,17,40,.92);backdrop-filter:blur(12px);border-top:1px solid var(--border);
+  display:flex;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:none;color:var(--dim);font-size:10.5px;font-weight:800;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:inherit}
+nav button .ic{font-size:21px}
+nav button.on{color:var(--blue)}
+nav button.on .ic{transform:translateY(-1px);filter:drop-shadow(0 0 8px rgba(96,165,250,.7))}
+footer{text-align:center;color:#53638a;font-size:11.5px;padding:8px 8px 4px;line-height:1.7}
+footer b{color:#7d92bd}
+.note{font-size:12px;color:var(--amber);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:9px 12px;margin-top:10px}
+.note.ok{color:var(--green);background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.3)}
+.newtag{display:inline-block;background:linear-gradient(90deg,var(--pink),var(--purp));color:#fff;font-size:10px;font-weight:900;border-radius:6px;padding:2px 7px;margin-left:6px;letter-spacing:.05em}
+@media (min-width:561px){ .wrap{border-left:1px solid var(--border);border-right:1px solid var(--border)} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">🇲🇹 Malta · official 2026 rules</div>
+    <h1>WAGE CALCULATOR<br>2026 💶</h1>
+    <div class="sub">How much of your wage do <b>you</b> actually keep? 🤔</div>
+    <div>
+      <span class="ver">v1.1.0</span>
+      <span class="offchip">📴 works offline</span>
+    </div>
+  </header>
+
+  <!-- ======================= CALC ======================= -->
+  <section class="panel" id="tab-calc">
+
+    <div class="card">
+      <h2>💶 Your pay</h2>
+      <div class="hint">Type the number from your contract — the number your boss gives you.</div>
+      <div class="field">
+        <label class="lab" for="in_amount">💵 Your pay BEFORE tax (gross)</label>
+        <input type="number" inputmode="decimal" id="in_amount" class="big-amount" placeholder="0.00" min="0" step="any">
+        <div class="chips" id="perchips">
+          <div class="chip on" data-per="hour">per hour</div>
+          <div class="chip" data-per="week">per week</div>
+          <div class="chip" data-per="month">per month</div>
+          <div class="chip" data-per="year">per year</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lab" for="in_hours">Hours you work per week</label>
+        <input type="number" inputmode="decimal" id="in_hours" value="40" min="1" max="80" step="any">
+        <div class="chips">
+          <div class="chip sm" data-h="40">40</div>
+          <div class="chip sm" data-h="37.5">37.5</div>
+          <div class="chip sm" data-h="30">30</div>
+          <div class="chip sm" data-h="25">25</div>
+          <div class="chip sm" data-h="20">20</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>⏰ Overtime</h2>
+      <div class="hint">Extra hours per week. Malta rule of thumb: extra hours <b>1.5×</b> your normal rate, Sundays &amp; public holidays <b>2×</b> (your work agreement counts).</div>
+      <div class="field">
+        <label class="lab" for="in_ot15">Hours at 1.5× (extra weekdays / Saturday)</label>
+        <input type="number" inputmode="decimal" id="in_ot15" placeholder="0" min="0" max="60" step="any">
+      </div>
+      <div class="field">
+        <label class="lab" for="in_ot20">Hours at 2× (Sundays / public holidays)</label>
+        <input type="number" inputmode="decimal" id="in_ot20" placeholder="0" min="0" max="60" step="any">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>👪 Your tax setup</h2>
+      <div class="hint">Pick what matches you. This changes how much tax you pay — a lot!</div>
+      <div class="field">
+        <label class="lab" for="in_status">Tax status</label>
+        <select id="in_status">
+          <option value="single">🧍 Single</option>
+          <option value="married">💑 Married (joint computation)</option>
+          <option value="married1">💑🧒 Married + 1 child — NEW 2026 🆕</option>
+          <option value="married2">💑🧒🧒 Married + 2 or more children — NEW 2026 🆕</option>
+          <option value="parent">👩‍👧 Parent (single computation)</option>
+          <option value="parent1">👩‍👧 Parent + 1 qualifying child — NEW 2026 🆕</option>
+          <option value="parent2">👩‍👧‍👦 Parent + 2+ qualifying children — NEW 2026 🆕</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="lab" for="in_age">Your age (for the minimum-wage check)</label>
+        <select id="in_age">
+          <option value="18">18 or older</option>
+          <option value="17">17 years old</option>
+          <option value="16">Under 17</option>
+        </select>
+      </div>
+
+      <div class="tglrow">
+        <div class="t"><b>🎂 Born in 1962 or later?</b>
+          <small>Sets your SSC ceiling — €55.93/w if yes, €49.04/w if born before 1962.</small></div>
+        <label class="switch"><input type="checkbox" id="in_born62" checked><span class="knob"></span></label>
+      </div>
+      <div class="tglrow">
+        <div class="t"><b>🎁 Statutory bonus &amp; allowance (€512.52/year)</b>
+          <small>Every full-time employee gets it (pro-rata if part-time or mid-year start).</small></div>
+        <label class="switch"><input type="checkbox" id="in_bonus" checked><span class="knob"></span></label>
+      </div>
+      <div class="tglrow">
+        <div class="t"><b>⚡ Overtime taxed at the special 15%</b>
+          <small>For non-managers earning basic ≤ €375/week: first €10,000 of OT per year taxed at 15% only.</small></div>
+        <label class="switch"><input type="checkbox" id="in_ot15tax"><span class="knob"></span></label>
+      </div>
+      <div class="note ok" id="ot15note" style="display:none"></div>
+    </div>
+
+    <!-- HERO -->
+    <div class="card hero">
+      <div class="lbl" id="r_lbl">You take home, per week 💸</div>
+      <div class="big" id="r_netmain">€0.00</div>
+      <div class="side">
+        <div class="pill"><b id="r_p1">€0.00</b><span id="r_p1l">per month</span></div>
+        <div class="pill"><b id="r_p2">€0.00</b><span id="r_p2l">per year</span></div>
+        <div class="pill"><b id="r_pgross">€0.00</b><span id="r_pgrossl">before tax / week</span></div>
+      </div>
+      <div><span class="badge ok" id="r_badge">✅ above minimum wage</span></div>
+      <div class="keep">
+        <div class="bar"><i class="k" id="kb_net" style="width:80%"></i><i class="t" id="kb_tax" style="width:12%"></i><i class="s" id="kb_ssc" style="width:8%"></i></div>
+        <div class="txt"><span id="r_kept">✅ You keep 80%</span><span id="r_lost">🧾 tax 12% · 🏛️ SSC 8%</span></div>
+      </div>
+      <div class="srcs">Estimated with the official 2026 bands — cfr.gov.mt · dier.gov.mt · socialsecurity.gov.mt. Your payslip can differ by a cent or two from rounding.</div>
+    </div>
+
+    <div class="card">
+      <h2>🧾 The full breakdown</h2>
+      <table class="tb">
+        <thead><tr><th class="min"></th><th>per week</th><th>per month</th><th>per year</th></tr></thead>
+        <tbody id="r_table"></tbody>
+      </table>
+      <button class="btn ghost" id="btn_share">📤 Copy my result (share it!)</button>
+    </div>
+  </section>
+
+  <!-- ======================= BREAKDOWN ======================= -->
+  <section class="panel" id="tab-break" style="display:none">
+    <div class="card">
+      <h2>📊 Where your money goes</h2>
+      <div class="hint">Out of every €100 you earn:</div>
+      <div class="donutwrap">
+        <div id="donut"><div class="c"><b id="d_pct">0%</b><span>you keep</span></div></div>
+        <div class="leg">
+          <div class="row"><span class="dot" style="background:var(--green)"></span>💚 You keep <b id="l_net">€0.00</b></div>
+          <div class="row"><span class="dot" style="background:var(--amber)"></span>🧾 Income tax <b id="l_tax">€0.00</b></div>
+          <div class="row"><span class="dot" style="background:var(--blue)"></span>🏛️ SSC (NI) <b id="l_ssc">€0.00</b></div>
+        </div>
+      </div>
+      <div class="hint" style="margin:0">SSC builds your pension &amp; benefits. Income tax goes to the state. No other hidden payroll taxes in Malta. ✅</div>
+    </div>
+    <div class="card">
+      <h2>🪜 Your 2026 tax ladder</h2>
+      <div class="hint">These are the official bands for <b id="band_status_name">Single</b>. The arrow shows where YOU are:</div>
+      <table class="tb"><tbody id="r_bands"></tbody></table>
+    </div>
+    <div class="card">
+      <h2>🔢 The 2026 numbers at a glance</h2>
+      <table class="tb"><tbody>
+        <tr><td>📏 Minimum wage (18+)</td><td>€229.44 / week</td><td>€5.74 / hour</td></tr>
+        <tr><td>📈 COLA 2026</td><td>€4.66 / week</td><td>€0.12 / hour</td></tr>
+        <tr><td>🎁 Bonus + allowance</td><td>€9.86 / week</td><td>€512.52 / year</td></tr>
+        <tr><td>🏛️ SSC</td><td>10% of basic</td><td>cap €55.93 / week</td></tr>
+        <tr><td>🚫 Tax-free pay (single)</td><td>€230.77 / week</td><td>€12,000 / year</td></tr>
+      </tbody></table>
+    </div>
+  </section>
+
+  <!-- ======================= WHAT IF ======================= -->
+  <section class="panel" id="tab-whatif" style="display:none">
+    <div class="card">
+      <h2>🚀 What if I got a raise?</h2>
+      <div class="hint">Based on your numbers from the Calculator tab 👆 — how much MORE lands in your pocket:</div>
+      <div id="whatif_list"></div>
+    </div>
+    <div class="card">
+      <h2>🌟 Dream wage</h2>
+      <div class="hint">Type ANY hourly rate, see the weekly take-home (your hours &amp; tax setup stay the same):</div>
+      <div class="field">
+        <input type="number" inputmode="decimal" id="dream_input" class="big-amount" placeholder="€ per hour">
+      </div>
+      <div class="side" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <div class="pill"><b id="dream_w">€0.00</b><span>net / week</span></div>
+        <div class="pill"><b id="dream_m">€0.00</b><span>net / month</span></div>
+        <div class="pill"><b id="dream_y">€0.00</b><span>net / year</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= GUIDE ======================= -->
+  <section class="panel" id="tab-guide" style="display:none">
+    <div class="card">
+      <h2>❓ How to use this app</h2>
+      <div class="hint">Everything explained in plain words 👇</div>
+
+      <details open>
+        <summary>🚀 1. Quick start</summary>
+        <div class="body">
+          <b>Three steps:</b>
+          <ul>
+            <li>1️⃣ Type your pay in the big box (before tax — the number on your contract).</li>
+            <li>2️⃣ Tap <span class="chip">per hour / week / month / year</span> so the app knows what kind of number it is.</li>
+            <li>3️⃣ Set your <b>hours per week</b> — done! Your green take-home number appears. 💚</li>
+          </ul>
+          The big green number <b>follows the way you typed your pay</b> — typed per month? You see per month 📅. The other views sit in small cards, plus a card with your pay <b>BEFORE tax</b> so you can double-check. 👀
+          Everything you type is saved on your phone automatically. 🔒 Nothing is sent anywhere.
+        </div>
+      </details>
+
+      <details>
+        <summary>💶 2. Ways to enter your pay</summary>
+        <div class="body">
+          You can enter your wage <b>any way you know it</b>:
+          <ul>
+            <li><b>Per hour</b> — e.g. <b>10</b> with 40 hours/week.</li>
+            <li><b>Per week</b> — e.g. <b>450</b>.</li>
+            <li><b>Per month</b> — e.g. <b>1950</b> (app turns it into yearly ÷ 12).</li>
+            <li><b>Per year</b> — e.g. <b>23400</b>.</li>
+          </ul>
+          The big green result matches the chip you picked: <b>per month</b> shows what lands in your pocket at the end of the month 📅. Week &amp; year sit in the small cards next to it, so you can compare with friends easily. 🤝
+          The full breakdown table shows <b>week · month · year</b> side by side — including exactly how much tax and SSC came out. 🧾
+        </div>
+      </details>
+
+      <details>
+        <summary>⏰ 3. Overtime &amp; the special 15% rule</summary>
+        <div class="body">
+          Add your extra hours:
+          <ul>
+            <li><b>1.5×</b> — normal extra hours (over 40/week) on weekdays &amp; Saturdays.</li>
+            <li><b>2×</b> — Sundays and public holidays (double pay).</li>
+          </ul>
+          <b>⚡ Special rule:</b> if your basic pay is <b>€375/week or less</b> and you're not a manager, your first <b>€10,000</b> of overtime per year is taxed at only <b>15%</b>. Switch it on in "Your tax setup" — the app tells you if you qualify. ✅
+        </div>
+      </details>
+
+      <details>
+        <summary>👪 4. Tax status &amp; the NEW 2026 family tables</summary>
+        <div class="body">
+          Malta has different tax ladders. Pick yours:
+          <ul>
+            <li>🧍 <b>Single</b> — tax-free up to €12,000.</li>
+            <li>💑 <b>Married</b> (joint) — tax-free up to €15,000.</li>
+            <li>👩‍👧 <b>Parent</b> — tax-free up to €13,000.</li>
+            <li>🆕 <b>NEW in Budget 2026:</b> special bigger tables for <b>married</b> or <b>parent</b> WITH children — tax-free up to <b>€22,500</b> (married, 2+ kids)! Try them and watch the tax shrink. 🪄</li>
+          </ul>
+          The children's tables grow again in 2027 and 2028 — this app uses the exact <b>2026</b> ones.
+        </div>
+      </details>
+
+      <details>
+        <summary>🏛️ 5. What gets taken out of your wage</summary>
+        <div class="body">
+          Only two things in Malta:
+          <ul>
+            <li>🏛️ <b>SSC / NI</b> — 10% of your basic weekly wage (pension, health, benefits). Capped at <b>€55.93/week</b> in 2026 if born 1962 or later (€49.04 if older). Big earners never pay more than that. 💡</li>
+            <li>🧾 <b>Income tax</b> — 0% / 15% / 25% / 35% in steps. High tax only on the high slices, never on everything.</li>
+          </ul>
+          That's it — no city tax, no hidden payroll taxes. 🙌
+        </div>
+      </details>
+
+      <details>
+        <summary>🎁 6. Bonus, allowance &amp; COLA</summary>
+        <div class="body">
+          <ul>
+            <li>🎁 <b>Statutory bonus &amp; weekly allowance</b> — €512.52/year total, every full-timer (paid in 4 parts: March, June, September, December). Switch it off if you're part-time or started mid-year.</li>
+            <li>📈 <b>COLA 2026</b> — everyone's wage went up <b>€4.66/week</b> this January. It's already inside your wage — no need to add it.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>📏 7. Minimum wage checker</summary>
+        <div class="body">
+          Under your green number there's a badge:
+          <ul>
+            <li>✅ <b>green</b> — you're at or above the 2026 minimum.</li>
+            <li>⚠️ <b>red</b> — the hourly rate you typed is BELOW the legal minimum (2026: <b>€229.44/wk · €5.74/h</b> age 18+, €222.66 age 17, €219.82 under 17). If that badge is red, check your contract with the DIER! 📞</li>
+          </ul>
+          Pick your age in "Your tax setup" so the check is right for you.
+        </div>
+      </details>
+
+      <details>
+        <summary>⚠️ 8. Honest small print</summary>
+        <div class="body">
+          This app gives <b>very close estimates</b> using the official 2026 public tables (CFR / DIER / Social Security). Real payslips can differ because of:
+          <ul>
+            <li>🕒 part-time or mid-year starts (bonus &amp; SSC are pro-rata),</li>
+            <li>📄 your sector's WRO rules (some have higher minimums, e.g. security),</li>
+            <li>🧮 rounding to the cent on real payrolls,</li>
+            <li>💼 special cases (second jobs, self-employed, student schemes).</li>
+          </ul>
+          For the final word always check your payslip or cfr.gov.mt. 🤝 Runs fully offline — your numbers never leave your phone. 📴
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <footer>
+    Made with 💙 in Malta · <b>MALTA WAGE CALCULATOR 2026</b> · v1.1.0<br>
+    100% offline · no accounts · your numbers stay on your phone 📴
+  </footer>
+</div>
+
+<nav>
+  <button class="on" data-tab="calc"><span class="ic">🧮</span>CALC</button>
+  <button data-tab="break"><span class="ic">📊</span>BREAKDOWN</button>
+  <button data-tab="whatif"><span class="ic">🚀</span>WHAT-IF</button>
+  <button data-tab="guide"><span class="ic">❓</span>GUIDE</button>
+</nav>
+
+<script>
+/* ============================================================
+   MALTA WAGE CALCULATOR 2026 — pure rules + math (unit-testable)
+   Sources (official 2026):
+   - Tax bands: CFR via Budget 2026 tables (incl. NEW family tables)
+   - SSC Class 1 2026: min €6.62 flat (cat A, below min wage),
+     10% of basic weekly wage, cap €55.93 (born 1962+) / €49.04 (born ≤1961)
+   - Minimum wage 2026: €229.44/w (18+), €222.66 (17), €219.82 (<17); €5.74/h
+   - COLA 2026: €4.66/week · Bonus+allowance: €512.52/year
+   - OT concession: 15% on first €10,000 OT/year, basic ≤ €375/w, non-managerial
+   ============================================================ */
+var MWC_RULES = {
+  weeksPerYear: 52,
+  monthsPerYear: 12,
+  bonusYear: 512.52,             // statutory bonus + weekly allowance, full-timer
+  colaWeek: 4.66,
+  minWage: { '18': {week:229.44, hour:5.74}, '17': {week:222.66, hour:5.57}, '16': {week:219.82, hour:5.50} },
+  ssc: {
+    rate: 0.10,
+    flatBelowMin: 6.62,          // category A (part-time below min wage)
+    minWageWeek: 229.44,         // category C starts above this
+    cap1962: 55.93,
+    cap1961: 49.04
+  },
+  ot15capYear: 10000,
+  ot15maxBasicWeek: 375,
+  ot15rate: 0.15,
+  bands: {  // [from, to(null=inf), rate, subtract]
+    single:   [[0,12000,0,0],[12000,16000,0.15,1800],[16000,60000,0.25,3400],[60000,null,0.35,9400]],
+    married:  [[0,15000,0,0],[15000,23000,0.15,2250],[23000,60000,0.25,4550],[60000,null,0.35,10550]],
+    married1: [[0,17500,0,0],[17500,26500,0.15,2625],[26500,60000,0.25,5275],[60000,null,0.35,11275]],
+    married2: [[0,22500,0,0],[22500,32000,0.15,3375],[32000,60000,0.25,6575],[60000,null,0.35,12575]],
+    parent:   [[0,13000,0,0],[13000,17500,0.15,1950],[17500,60000,0.25,3700],[60000,null,0.35,9700]],
+    parent1:  [[0,14500,0,0],[14500,21000,0.15,2175],[21000,60000,0.25,4275],[60000,null,0.35,10275]],
+    parent2:  [[0,18500,0,0],[18500,25500,0.15,2775],[25500,60000,0.25,5325],[60000,null,0.35,11325]]
+  },
+  statusNames: {
+    single:'Single', married:'Married (joint)', married1:'Married + 1 child', married2:'Married + 2+ children',
+    parent:'Parent', parent1:'Parent + 1 child', parent2:'Parent + 2+ children'
+  }
+};
+
+function mwcBandTax(status, chargeable){
+  var t = (MWC_RULES.bands[status] || MWC_RULES.bands.single);
+  var x = Math.max(0, chargeable || 0);
+  for (var i = t.length - 1; i >= 0; i--){
+    var b = t[i], from = b[0], to = b[1], rate = b[2], sub = b[3];
+    if (x > from) return x * rate - sub;   // cannot be negative in valid bands
+  }
+  return 0;
+}
+function mwcSscWeek(basicWeekly, born1962orLater){
+  var w = Math.max(0, basicWeekly || 0);
+  if (w <= 0) return 0;
+  var s = MWC_RULES.ssc;
+  if (w < s.minWageWeek) return Math.min(s.flatBelowMin, w);  // category A flat stamp
+  var v = w * s.rate;
+  var cap = born1962orLater ? s.cap1962 : s.cap1961;
+  return Math.min(v, cap);
+}
+/* s = {pay, per, hours, ot15, ot20, status, born62, bonus, useOT15, age} */
+function mwcCompute(s){
+  var W = MWC_RULES.weeksPerYear, M = MWC_RULES.monthsPerYear;
+  var pay = Math.max(0, +s.pay || 0);
+  var hours = Math.min(80, Math.max(1, +s.hours || 40));
+  var annBasic;
+  if (s.per === 'week')       annBasic = pay * W;
+  else if (s.per === 'month') annBasic = pay * M;
+  else if (s.per === 'year')  annBasic = pay;
+  else                        annBasic = pay * hours * W;   // per hour
+  var basicWeekly = annBasic / W;
+  var hourly = s.per === 'hour' ? pay : (hours > 0 ? basicWeekly / hours : 0);
+
+  var ot15h = Math.max(0, +s.ot15 || 0), ot20h = Math.max(0, +s.ot20 || 0);
+  var ot15W = ot15h * 1.5 * hourly, ot20W = ot20h * 2 * hourly;
+  var otWeekly = ot15W + ot20W, otAnnual = otWeekly * W;
+
+  var bonusA = s.bonus ? MWC_RULES.bonusYear : 0;
+  var sscW = mwcSscWeek(basicWeekly, !!s.born62), sscA = sscW * W;
+
+  var eligOT15 = !!s.useOT15 && basicWeekly <= MWC_RULES.ot15maxBasicWeek + 1e-9 && otAnnual > 0;
+  var qualOT = eligOT15 ? Math.min(otAnnual, MWC_RULES.ot15capYear) : 0;
+  var restOT = otAnnual - qualOT;
+  var baseCharg = annBasic + bonusA + restOT;
+  var tax = Math.max(0, mwcBandTax(s.status, baseCharg) + MWC_RULES.ot15rate * qualOT);
+
+  var grossA = annBasic + bonusA + otAnnual;
+  var netA = grossA - sscA - tax;
+  var taxPct  = grossA > 0 ? tax / grossA : 0;
+  var sscPct  = grossA > 0 ? sscA / grossA : 0;
+  var keepPct = grossA > 0 ? netA / grossA : 0;
+
+  var mw = MWC_RULES.minWage[String(s.age || '18')] || MWC_RULES.minWage['18'];
+  var effHourly = hours > 0 ? basicWeekly / hours : 0;
+
+  return {
+    hours: hours, hourly: hourly, basicWeekly: basicWeekly, annBasic: annBasic,
+    ot15h: ot15h, ot20h: ot20h, ot15W: ot15W, ot20W: ot20W, otWeekly: otWeekly, otAnnual: otAnnual,
+    bonusA: bonusA, sscW: sscW, sscA: sscA,
+    eligOT15: eligOT15, qualOT: qualOT, restOT: restOT,
+    tax: tax, grossA: grossA, netA: netA,
+    netW: netA / W, netM: netA / M,
+    taxPct: taxPct, sscPct: sscPct, keepPct: keepPct,
+    minW: mw, effHourly: effHourly, belowMin: hourly > 0 && effHourly < mw.hour - 1e-9
+  };
+}
+/* node test hook */
+if (typeof module !== 'undefined' && module.exports){
+  module.exports = { MWC_RULES: MWC_RULES, mwcBandTax: mwcBandTax, mwcSscWeek: mwcSscWeek, mwcCompute: mwcCompute };
+}
+
+/* ============================================================
+   UI layer (only runs in a browser)
+   ============================================================ */
+if (typeof document !== 'undefined') (function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var fmt = function(n){ return '€' + (isFinite(n)?n:0).toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+  var pct = function(p){ return (p*100).toFixed(1) + '%'; };
+  var SAVE_KEY = 'mwc26_state';
+
+  var state = { pay:'', per:'hour', hours:40, ot15:'', ot20:'', status:'single', age:'18', born62:true, bonus:true, useOT15:false };
+
+  function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }catch(e){} }
+  function load(){
+    try{
+      var s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
+      if (s && typeof s === 'object'){ for (var k in state) if (s[k] !== undefined) state[k] = s[k]; }
+    }catch(e){}
+  }
+  function numState(){
+    return { pay:+state.pay||0, per:state.per, hours:+state.hours||40, ot15:+state.ot15||0, ot20:+state.ot20||0,
+             status:state.status, age:state.age, born62:!!state.born62, bonus:!!state.bonus, useOT15:!!state.useOT15 };
+  }
+
+  function render(){
+    var r = mwcCompute(numState());
+    /* hero — BIG number follows the way you typed your pay (month → monthly!) */
+    var UN = { week:{div:52, name:'week'}, month:{div:12, name:'month'}, year:{div:1, name:'year'} };
+    var mainU = state.per === 'month' ? 'month' : (state.per === 'year' ? 'year' : 'week');
+    var others = ['week', 'month', 'year'].filter(function(u){ return u !== mainU; });
+    $('r_lbl').textContent = '💚 You take home, per ' + mainU;
+    $('r_netmain').textContent = fmt(r.netA / UN[mainU].div);
+    $('r_p1').textContent = fmt(r.netA / UN[others[0]].div);
+    $('r_p1l').textContent = 'per ' + others[0];
+    $('r_p2').textContent = fmt(r.netA / UN[others[1]].div);
+    $('r_p2l').textContent = 'per ' + others[1];
+    $('r_pgross').textContent = fmt(r.annBasic / UN[mainU].div);
+    $('r_pgrossl').textContent = 'before tax / ' + mainU;
+    var b = $('r_badge');
+    if (r.hourly <= 0){ b.style.display = 'none'; }
+    else{
+      b.style.display = '';
+      if (r.belowMin){
+        b.className = 'badge warn';
+        b.textContent = '⚠️ BELOW 2026 minimum (' + fmt(r.minW.hour) + '/h) — check your contract!';
+      } else {
+        b.className = 'badge ok';
+        var extra = ((r.effHourly / r.minW.hour) - 1) * 100;
+        b.textContent = '✅ Above minimum wage' + (extra >= 1 ? ' (' + extra.toFixed(0) + '% over)' : '');
+      }
+    }
+    $('kb_net').style.width = Math.max(0, r.keepPct * 100) + '%';
+    $('kb_tax').style.width = Math.max(0, r.taxPct * 100) + '%';
+    $('kb_ssc').style.width = Math.max(0, r.sscPct * 100) + '%';
+    $('r_kept').textContent = '✅ You keep ' + pct(r.keepPct);
+    $('r_lost').textContent = '🧾 tax ' + pct(r.taxPct) + ' · 🏛️ SSC ' + pct(r.sscPct);
+
+    /* OT15 note */
+    var n = $('ot15note');
+    if (state.useOT15){
+      n.style.display = '';
+      if (+state.ot15 + +state.ot20 <= 0){ n.className = 'note'; n.textContent = 'ℹ️ You switched the 15% OT rule on but added no overtime hours yet.'; }
+      else if (r.eligOT15){ n.className = 'note ok'; n.textContent = '✅ You qualify! First ' + fmt(r.qualOT) + ' of your overtime gets the 15% tax.'; }
+      else { n.className = 'note'; n.textContent = '⚠️ Your basic pay is over €375/week, so the 15% OT rule does not apply — overtime is taxed normally.'; }
+    } else n.style.display = 'none';
+
+    /* breakdown table — week / month / year */
+    var rows = [
+      ['💶 Basic pay', r.basicWeekly, r.annBasic / 12, r.annBasic],
+      ['⏰ Overtime 1.5×', r.ot15W, r.ot15W * 52 / 12, r.ot15W * 52],
+      ['⏰ Overtime 2×', r.ot20W, r.ot20W * 52 / 12, r.ot20W * 52],
+      ['🎁 Bonus & allowance', r.bonusA / 52, r.bonusA / 12, r.bonusA],
+      ['= Gross', r.grossA / 52, r.grossA / 12, r.grossA, 'tot'],
+      ['🏛️ SSC (NI)', r.sscW, r.sscA / 12, r.sscA, 'neg'],
+      ['🧾 Income tax', r.tax / 52, r.tax / 12, r.tax, 'neg'],
+      ['💚 YOU KEEP', r.netW, r.netM, r.netA, 'net']
+    ];
+    $('r_table').innerHTML = rows.map(function(x){
+      var tag = x[4];
+      var cls = (tag === 'tot' || tag === 'net') ? ' class="' + tag + '"' : '';
+      var nc = tag === 'neg' ? ' class="neg"' : '';
+      var dash = tag === 'neg' ? '−' : '';
+      return '<tr' + cls + '><td>' + x[0] + '</td><td' + nc + '>' + dash + fmt(x[1]) + '</td><td' + nc + '>' + dash + fmt(x[2]) + '</td><td' + nc + '>' + dash + fmt(x[3]) + '</td></tr>';
+    }).join('');
+
+    /* breakdown panel */
+    var h = 100;
+    var netEnd = r.keepPct * h, taxEnd = netEnd + r.taxPct * h;
+    $('donut').style.background = 'conic-gradient(var(--green) 0% ' + netEnd + '%, var(--amber) ' + netEnd + '% ' + taxEnd + '%, var(--blue) ' + taxEnd + '% 100%)';
+    $('d_pct').textContent = Math.round(r.keepPct * 100) + '%';
+    $('l_net').textContent = fmt(r.netA);
+    $('l_tax').textContent = fmt(r.tax);
+    $('l_ssc').textContent = fmt(r.sscA);
+    $('band_status_name').textContent = MWC_RULES.statusNames[state.status];
+    var tb = MWC_RULES.bands[state.status];
+    var charge = r.annBasic + r.bonusA + r.restOT;
+    $('r_bands').innerHTML = tb.map(function(bnd){
+      var from = bnd[0], to = bnd[1], rate = bnd[2];
+      var here = charge > from && (to === null || charge <= to);
+      var range = fmt(from) + (to === null ? '+' : ' – ' + fmt(to));
+      return '<tr' + (here ? ' style="background:rgba(96,165,250,.1)"' : '') + '><td>' + range + '</td><td><b>' + Math.round(rate*100) + '%</b>' + (here ? ' 👈 you' : '') + '</td></tr>';
+    }).join('');
+
+    /* what-if */
+    var cur = numState();
+    var wl = '';
+    [0.5, 1, 2, 5].forEach(function(d){
+      var s2 = {}; for (var k in cur) s2[k] = cur[k];
+      if (s2.per === 'hour') s2.pay = s2.pay + d;
+      else { s2.per = 'hour'; s2.pay = r.hourly + d; }
+      var r2 = mwcCompute(s2);
+      var dW = r2.netW - r.netW, dY = r2.netA - r.netA;
+      wl += '<div class="wi-row"><div><b>+' + fmt(d) + ' / hour</b><br><small>new take-home: ' + fmt(r2.netW) + ' / week</small></div><div class="up">+' + fmt(dW) + '<br><small>+' + fmt(dY) + ' / yr</small></div></div>';
+    });
+    if (r.hourly <= 0) wl = '<div class="hint">👉 First type your pay in the Calculator tab, then come back here!</div>';
+    $('whatif_list').innerHTML = wl;
+
+    /* dream wage */
+    var dw = +$('dream_input').value || 0;
+    if (dw > 0){
+      var s3 = {}; for (var k2 in cur) s3[k2] = cur[k2];
+      s3.per = 'hour'; s3.pay = dw;
+      var r3 = mwcCompute(s3);
+      $('dream_w').textContent = fmt(r3.netW);
+      $('dream_m').textContent = fmt(r3.netM);
+      $('dream_y').textContent = fmt(r3.netA);
+    } else { $('dream_w').textContent = $('dream_m').textContent = $('dream_y').textContent = '€0.00'; }
+
+    save();
+  }
+
+  function syncInputsFromState(){
+    $('in_amount').value = state.pay;
+    $('in_hours').value = state.hours;
+    $('in_ot15').value = state.ot15;
+    $('in_ot20').value = state.ot20;
+    $('in_status').value = state.status;
+    $('in_age').value = state.age;
+    $('in_born62').checked = state.born62;
+    $('in_bonus').checked = state.bonus;
+    $('in_ot15tax').checked = state.useOT15;
+    document.querySelectorAll('#perchips .chip').forEach(function(c){
+      c.classList.toggle('on', c.getAttribute('data-per') === state.per);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    load();
+    syncInputsFromState();
+
+    $('in_amount').addEventListener('input', function(){ state.pay = this.value; render(); });
+    $('in_hours').addEventListener('input', function(){ state.hours = this.value; render(); });
+    $('in_ot15').addEventListener('input', function(){ state.ot15 = this.value; render(); });
+    $('in_ot20').addEventListener('input', function(){ state.ot20 = this.value; render(); });
+    $('in_status').addEventListener('change', function(){ state.status = this.value; render(); });
+    $('in_age').addEventListener('change', function(){ state.age = this.value; render(); });
+    $('in_born62').addEventListener('change', function(){ state.born62 = this.checked; render(); });
+    $('in_bonus').addEventListener('change', function(){ state.bonus = this.checked; render(); });
+    $('in_ot15tax').addEventListener('change', function(){ state.useOT15 = this.checked; render(); });
+    $('dream_input').addEventListener('input', render);
+
+    document.querySelectorAll('#perchips .chip').forEach(function(c){
+      c.addEventListener('click', function(){ state.per = c.getAttribute('data-per');
+        document.querySelectorAll('#perchips .chip').forEach(function(x){ x.classList.toggle('on', x === c); });
+        render(); });
+    });
+    document.querySelectorAll('[data-h]').forEach(function(c){
+      c.addEventListener('click', function(){ state.hours = c.getAttribute('data-h'); $('in_hours').value = state.hours; render(); });
+    });
+
+    document.querySelectorAll('nav button').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        document.querySelectorAll('nav button').forEach(function(b){ b.classList.toggle('on', b === btn); });
+        var t = btn.getAttribute('data-tab');
+        document.querySelectorAll('.panel').forEach(function(p){ p.style.display = (p.id === 'tab-' + t) ? '' : 'none'; });
+        window.scrollTo(0, 0);
+      });
+    });
+
+    $('btn_share').addEventListener('click', function(){
+      var r = mwcCompute(numState());
+      var txt = '💶 MALTA WAGE CALCULATOR 2026 🇲🇹\n' +
+        'Status: ' + MWC_RULES.statusNames[state.status] + '\n' +
+        'Gross: ' + fmt(r.grossA) + ' / year\n' +
+        'Tax: ' + fmt(r.tax) + ' · SSC: ' + fmt(r.sscA) + '\n' +
+        '💚 TAKE-HOME: ' + fmt(r.netW) + ' / week (' + fmt(r.netM) + ' / month)\n' +
+        'You keep ' + pct(r.keepPct) + ' of your wage!';
+      var done = function(){ $('btn_share').textContent = '✅ Copied!'; setTimeout(function(){ $('btn_share').textContent = '📤 Copy my result (share it!)'; }, 2000); };
+      try{
+        if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done, done); }
+        else {
+          var ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta);
+          ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done();
+        }
+      }catch(e){ done(); }
+    });
+
+    render();
+  });
+})();
+</script>
+</body>
+</html>
