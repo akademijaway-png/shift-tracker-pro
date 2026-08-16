@@ -54,6 +54,7 @@ const GH_PATH = process.env.GH_PATH || 'backup/data.json';
 const GH_BRANCH = process.env.GH_BRANCH || 'main';
 const ghEnabled = !!(GH_TOKEN && GH_REPO);
 let ghSyncTimer = null, ghSha = null, ghSyncRunning = false;
+const GH_PUSH_DEBOUNCE_MS = parseInt(process.env.GH_PUSH_DEBOUNCE_MS || '60000', 10);
 const ghState = { lastOk: null, lastError: null };
 
 async function ghApi(method, body) {
@@ -72,30 +73,65 @@ async function ghApi(method, body) {
 
 async function ghRestore() {
   if (!ghEnabled) return;
-  try {
-    const r = await ghApi('GET');
-    if (!r.ok) { console.log('☁️ GitHub backup: none yet (status ' + r.status + ')'); return; }
-    const j = await r.json();
-    ghSha = j.sha || null;
-    const raw = Buffer.from(String(j.content || '').replace(/\n/g, ''), 'base64').toString('utf8');
-    const parsed = JSON.parse(raw);
-    if (parsed && Array.isArray(parsed.users)) {
-      db = Object.assign(db, parsed);
-      console.log('☁️ Restored from GitHub:', db.users.length, 'users,', (db.messages || []).length, 'messages');
+  // v1.8 — retry 3× before giving up: one network hiccup must never start us empty
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const r = await ghApi('GET');
+      if (!r.ok) { console.log('☁️ GitHub backup: none yet (status ' + r.status + ')'); return; }
+      const j = await r.json();
+      ghSha = j.sha || null;
+      const raw = Buffer.from(String(j.content || '').replace(/\n/g, ''), 'base64').toString('utf8');
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.users)) {
+        db = Object.assign(db, parsed);
+        console.log('☁️ Restored from GitHub:', db.users.length, 'users,', (db.messages || []).length, 'messages');
+      }
+      return; // ✅ restored
+    } catch (e) {
+      console.log('☁️ GitHub restore attempt ' + attempt + '/3 failed:', e.message);
+      if (attempt < 3) await new Promise(res => setTimeout(res, 3000));
     }
-  } catch (e) { console.log('☁️ GitHub restore failed (continuing):', e.message); }
+  }
+  console.log('☁️ GitHub restore failed 3× — continuing, but the push-guard below will protect the archive');
 }
 
 function ghSchedulePush() {
   if (!ghEnabled) return;
   clearTimeout(ghSyncTimer);
-  ghSyncTimer = setTimeout(ghPush, 60000); // at most ~1 push/min, after changes settle
+  ghSyncTimer = setTimeout(ghPush, GH_PUSH_DEBOUNCE_MS); // at most ~1 push/min, after changes settle
 }
+
+// 🛡️ v1.8 SAFETY GATE — an archive holding MORE users than live must never be
+// overwritten (a failed restore used to eat good backups). The account-delete
+// route raises ghAllowShrinkPush for exactly one push after a real deletion.
+let ghAllowShrinkPush = false;
 
 async function ghPush() {
   if (!ghEnabled || ghSyncRunning) return;
   ghSyncRunning = true;
   try {
+    // peek at the archive first
+    let priorUsers = 0;
+    try {
+      const g = await ghApi('GET');
+      if (g.ok) {
+        const j = await g.json();
+        if (j.sha) ghSha = j.sha;
+        const raw = Buffer.from(String(j.content || '').replace(/\n/g, ''), 'base64').toString('utf8');
+        const old = JSON.parse(raw);
+        priorUsers = (old && Array.isArray(old.users)) ? old.users.length : 0;
+      }
+    } catch (e) { priorUsers = 0; } // can't see the archive? don't block pushes on a blind spot
+
+    if (priorUsers > db.users.length && !ghAllowShrinkPush) {
+      ghState.lastError = 'safety-lock: archive has ' + priorUsers + ' users, live has ' + db.users.length + ' — push refused, restoring instead';
+      console.log('🛡️ GitHub backup protected: archive', priorUsers, 'users > live', db.users.length, '— refusing to overwrite; restoring from archive');
+      ghSyncRunning = false;
+      try { await ghRestore(); } catch (e) {} // self-heal: adopt the archive; next change pushes cleanly
+      return;
+    }
+    ghAllowShrinkPush = false; // one-shot permission consumed
+
     const body = {
       message: 'data backup ' + new Date().toISOString(),
       content: Buffer.from(JSON.stringify(db), 'utf8').toString('base64'),
@@ -276,7 +312,7 @@ app.get(['/manifest.json', '/sw.js', '/icons/icon-192.png', '/icons/icon-512.png
 
 app.get('/api/health', (req, res) => res.json({
   ok: true,
-  v: '1.7',
+  v: '1.8',
   users: db.users.length,
   time: nowISO(),
   backup: {
@@ -380,6 +416,7 @@ app.delete('/api/me', auth, (req, res) => {
   delete db.pushedReminders[uid];
   delete db.pushSubs[uid];
   Object.keys(db.sessions).forEach(t => { if (db.sessions[t].userId === uid) delete db.sessions[t]; });
+  ghAllowShrinkPush = true; // 🛡️ v1.8 — a real deletion is the ONE legal way to shrink the archive
   saveDB();
 
   // let their friends' apps refresh the list live
@@ -722,6 +759,14 @@ setInterval(() => {
 }, 20000);
 
 // boot: pull the GitHub backup (if configured) before taking traffic
+// v1.8 — final flush before Render pulls the plug: try one last backup on the way out
+async function flushAndExit(code) {
+  try { await Promise.race([ghPush(), new Promise(r => setTimeout(r, 8000))]); } catch (e) {}
+  process.exit(code);
+}
+process.on('SIGTERM', () => flushAndExit(0));
+process.on('SIGINT', () => flushAndExit(0));
+
 bootstrap().then(() => server.listen(PORT, () => {
   console.log('');
   console.log('  ╔═══════════════════════════════════════════╗');

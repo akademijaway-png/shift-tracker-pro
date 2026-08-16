@@ -753,6 +753,7 @@
             <h3 class="font-bold text-slate-900">My Earnings 💶</h3>
             <div class="flex items-center gap-2">
               <button class="btn btn-primary btn-sm" style="width: auto;" onclick="openPayCalculator()">🧮 Pay Calc</button>
+              <button class="btn btn-primary btn-sm" style="width: auto;" onclick="openNetCalc()">💶 Take-Home 🇲🇹</button>
               <span class="pay-badge" id="dash-wage-badge">Not set</span>
             </div>
           </div>
@@ -1286,7 +1287,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.19.0 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.20.0 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -1419,7 +1420,7 @@
           <details class="howto-item"><summary>⏱️ Start &amp; stop a shift</summary><p>Home → big blue <b>START</b> button — the clock ticks and counts your € live. Tap it again (FINISH) when work ends. Forgot to press start? <b>My Earnings</b> → ＋ Add Shift.</p></details>
           <details class="howto-item"><summary>🔁 Auto shifts (set once, runs alone)</summary><p>Settings → <b>🔁 Add Shift (auto)</b> → pick your days → tap a quick time (like ☀️ 07–19) → Save. The clock starts &amp; stops <b>by itself</b> on those days. 🔵 blue dot on the calendar = auto shift planned. Tap the day → ✏️ change or 🗑️ remove just that day. <b>Repeat</b> choices: every week, this week only, <b>📅 next week only</b> (fills next Mon–Sun, then stops — perfect when the new roster just landed), or until the end of the month. 💶 <b>Different wage on different days?</b> In that same form, <b>wage for each day (optional)</b> — type a €/h next to each selected day that pays differently; empty days keep your normal rate, and everything is calculated with it automatically (payslips, payday, live counter). Break not paid? Tick 🍔 <b>Unpaid break</b> in that same form and set the minutes.</p></details>
           <details class="howto-item"><summary>🗓️ Calendar</summary><p><b>‹ ›</b> = previous / next month, <b>« »</b> = jump a whole year. ★ = Maltese public holiday (special pay 💶). Tap any day to see its shifts, notes and reminders.</p></details>
-          <details class="howto-item"><summary>💶 Wage &amp; pay rules</summary><p>Settings → <b>💶 My Hourly Wage</b>: set your €/hour and tick what your workplace pays (Sunday ×2, holidays, rest days, overtime). Pay is then counted automatically on every shift. Home → <b>🧮 Pay Calc</b> = quick what-if maths. 🍔 <b>Unpaid break?</b> Tick it in any shift form (add / edit / auto) or right here in Pay Calc — those minutes come straight off the paid time, e.g. 12h − 30m = 11.5h paid. <b>Same break every day?</b> Settings → <b>💶 My Hourly Wage</b> → tick <b>🍔 Unpaid break</b> and set the minutes once — every NEW shift (⏱️ Start/Finish too, plus auto rules) starts with it ticked; you can still change or untick it per shift. 🗓️ <b>Payday tracking?</b> Settings → <b>🗓️ Payday</b> → tick <b>Enable</b> → pick your payday day (or set the exact next date). The dashboard then shows the <b>calendar month AND the payday period</b> (like 15 Aug → 14 Sep), and <b>📜 Salary History</b> keeps every finished period with its full maths — the normal monthly payslip stays exactly as it was.</p></details>
+          <details class="howto-item"><summary>💶 Wage &amp; pay rules</summary><p>Settings → <b>💶 My Hourly Wage</b>: set your €/hour and tick what your workplace pays (Sunday ×2, holidays, rest days, overtime). Pay is then counted automatically on every shift. Home → <b>🧮 Pay Calc</b> = quick day-rate what-if maths. 🍔 <b>Unpaid break?</b> Tick it in any shift form (add / edit / auto) or right here in Pay Calc — those minutes come straight off the paid time, e.g. 12h − 30m = 11.5h paid. <b>Same break every day?</b> Settings → <b>💶 My Hourly Wage</b> → tick <b>🍔 Unpaid break</b> and set the minutes once — every NEW shift (⏱️ Start/Finish too, plus auto rules) starts with it ticked; you can still change or untick it per shift. 🗓️ <b>Payday tracking?</b> Settings → <b>🗓️ Payday</b> → tick <b>Enable</b> → pick your payday day (or set the exact next date). The dashboard then shows the <b>calendar month AND the payday period</b> (like 15 Aug → 14 Sep), and <b>📜 Salary History</b> keeps every finished period with its full maths — the normal monthly payslip stays exactly as it was.</p><p>💚 <b>Take-Home Calc 🇲🇹 2026 (NEW):</b> Home → My Earnings → <b>💶 Take-Home</b> — type your pay any way you know it (per hour / week / month / year), add ⏰ overtime (1.5× &amp; 2×), and tick the boxes: 🎂 born 1962 or later, 🎁 statutory bonus, ⚡ overtime special <b>15% tax</b> (the app checks if you qualify). Pick your 👪 tax status — all 7 official 2026 tables are inside, including the <b>NEW family tables</b> (married / parent with children: much less tax!). You instantly see what you <b>REALLY keep</b> per week / month / year after 🏛️ SSC and 🧾 tax, a 📏 minimum-wage checker (with your age!), a 🪄 <b>Use my real week</b> button that estimates this week's net from your actual logged shifts, and a 🏛️/🧑‍💼/🏢 job-type card (government vs agency vs private) explaining what you're entitled to. Everything is saved and syncs with your account. Numbers are close estimates from the official 2026 public tables (cfr.gov.mt · dier.gov.mt).</p></details>
           <details class="howto-item"><summary>📄 Payslips &amp; 📋 rosters</summary><p>My Earnings → <b>📄 Payslip</b>: the app BUILDS your payslip from your hours (⬇️ CSV for Excel, or 🖨️ Print → Save as PDF). My Earnings → <b>📎 Upload Payslip</b>: add the payslip your employer gives you (photo or PDF) so everything sits in one safe place. My Earnings → <b>📋 Upload Roster</b>: keep the roster your boss gives out (photo or PDF) — tag it like “17–30 August” and find it any time under <b>My Roster Files</b>.</p></details>
           <details class="howto-item"><summary>💬 Co-workers &amp; chat</summary><p>👥 Co-workers → find a name → <b>Add Friend</b>. When someone adds <b>you</b>, the request waits for you at the TOP of 💬 Messages (and in 👥 Co-workers) with <b>Accept / Decline</b> — the red dot on Messages counts requests too. After accepting, chat in 💬 Messages — messages arrive even when their app is closed.</p></details>
           <details class="howto-item"><summary>🔔 Notifications</summary><p>Settings → <b>🔔 Push Notifications</b> → Enable → then 📣 Send test to try it. 🍏 iPhone: first Share → <b>Add to Home Screen</b>, then open the app from there.</p></details>
@@ -2900,8 +2901,8 @@
       showToast(on ? 'Overtime beyond 8h pays ×1.5 ⏰' : 'Overtime stacking switched off', 'success');
     }
 
-    // ==================== 🧮 SECURITY PAY CALCULATOR (v1.8.0) ====================
-    // Malta security pay rules with tick boxes — tick any combination, the
+    // ==================== 🧮 SHIFT PAY CALC (v1.8.0) ====================
+    // Malta workplace pay rules with tick boxes — tick any combination, the
     // math stacks them correctly. Normal working day reference = 8h.
     const PAYCALC_NORMAL_HOURS = 8;
 
@@ -3006,7 +3007,7 @@
             <input type="checkbox" id="${id}" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" onchange="togglePayCalcTick('${id.replace('paycalc-', '')}')">
             <span class="text-sm text-slate-900 font-semibold">${label}</span>
           </label>`;
-      openModal('🧮 Security Pay Calculator', `
+      openModal('🧮 Shift Pay Calculator', `
         <div class="input-group">
           <label>Shift date</label>
           <input type="date" id="paycalc-date" class="input" onchange="payCalcAutoDate()">
@@ -3086,6 +3087,344 @@
         </div>`;
     }
 
+    // ==================== 💶 TAKE-HOME CALC 2026 🇲🇹 (v1.20.0) ====================
+    // What you REALLY keep after SSC + income tax — official Malta 2026 rules,
+    // inside the Pay Calc area: any pay input (hour/week/month/year), overtime,
+    // TICK BOXES (🎂 born 1962+ · 🎁 bonus · ⚡ OT special 15%), all 7 official
+    // tax tables (incl. the NEW 2026 family ones), a 📏 minimum-wage checker,
+    // a 🪄 use-my-real-week magic button (from your real logged shifts), and a
+    // 🏛️🧑‍💼🏢 government-vs-agency-vs-private info card. Settings persist in
+    // DB.settings.netCalc and travel to the cloud with everything else.
+    // === NETC START ===  (pure math — the tent's test battery loads this block alone)
+    const NETC = {
+      weeksPerYear: 52, monthsPerYear: 12,
+      bonusYear: 512.52,        // statutory bonus + weekly allowance, full-timer (2026)
+      colaWeek: 4.66,           // COLA 2026
+      minWage: { '18': { week: 229.44, hour: 5.74 }, '17': { week: 222.66, hour: 5.57 }, '16': { week: 219.82, hour: 5.50 } },
+      ssc: { rate: 0.10, flatBelowMin: 6.62, minWageWeek: 229.44, cap1962: 55.93, cap1961: 49.04 },
+      ot15capYear: 10000, ot15maxBasicWeek: 375, ot15rate: 0.15,
+      bands: { // [from, to(null=∞), rate, subtract] — 2026 official
+        single:   [[0, 12000, 0, 0], [12000, 16000, 0.15, 1800], [16000, 60000, 0.25, 3400], [60000, null, 0.35, 9400]],
+        married:  [[0, 15000, 0, 0], [15000, 23000, 0.15, 2250], [23000, 60000, 0.25, 4550], [60000, null, 0.35, 10550]],
+        married1: [[0, 17500, 0, 0], [17500, 26500, 0.15, 2625], [26500, 60000, 0.25, 5275], [60000, null, 0.35, 11275]],
+        married2: [[0, 22500, 0, 0], [22500, 32000, 0.15, 3375], [32000, 60000, 0.25, 6575], [60000, null, 0.35, 12575]],
+        parent:   [[0, 13000, 0, 0], [13000, 17500, 0.15, 1950], [17500, 60000, 0.25, 3700], [60000, null, 0.35, 9700]],
+        parent1:  [[0, 14500, 0, 0], [14500, 21000, 0.15, 2175], [21000, 60000, 0.25, 4275], [60000, null, 0.35, 10275]],
+        parent2:  [[0, 18500, 0, 0], [18500, 25500, 0.15, 2775], [25500, 60000, 0.25, 5325], [60000, null, 0.35, 11325]]
+      },
+      statusNames: {
+        single: 'Single', married: 'Married (joint)', married1: 'Married + 1 child 🆕', married2: 'Married + 2+ children 🆕',
+        parent: 'Parent', parent1: 'Parent + 1 child 🆕', parent2: 'Parent + 2+ children 🆕'
+      },
+      jobInfo: {
+        gov: '🏛️ <b>Government (direct employee)</b>: pay scales 1–20 with yearly step-ups · lowest scale sits €1,200 ABOVE the minimum wage · COLA €4.66/week guaranteed · extra allowances (qualification, long-service bonus, acting / deputising pay) · civil-service pension · 27 days paid leave (2026).',
+        agency: '🧑‍💼 <b>Agency worker</b> (e.g. placed at a government site): your employer is the AGENCY — no government pay scales, no extra allowances, no long-service bonus, no civil-service pension · you still ALWAYS get: the minimum wage or your sector rate (never less) · COLA €4.66/week · 27 days paid leave (2026) · notice protection.',
+        private: '🏢 <b>Private sector</b>: your contract + the national minimum apply — but many industries (hotels, construction, transport, cleaning, hospitals, food factories…) have their own legal minimums (WROs), often HIGHER — the higher one always wins · COLA €4.66/week · 27 days paid leave (2026).'
+      }
+    };
+    function ncBandTax(status, chargeable) {
+      const t = NETC.bands[status] || NETC.bands.single;
+      const x = Math.max(0, chargeable || 0);
+      for (let i = t.length - 1; i >= 0; i--) { if (x > t[i][0]) return Math.max(0, x * t[i][2] - t[i][3]); }
+      return 0;
+    }
+    function ncSscWeek(basicWeekly, born62) {
+      const w = Math.max(0, basicWeekly || 0);
+      if (w <= 0) return 0;
+      const s = NETC.ssc;
+      if (w < s.minWageWeek) return Math.min(s.flatBelowMin, w); // cat A flat stamp (part-time below min wage)
+      return Math.min(w * s.rate, born62 ? s.cap1962 : s.cap1961);
+    }
+    // o: { pay, per('hour'|'week'|'month'|'year'), hours, ot15, ot20, status, born62, bonus, useOT15, age }
+    function ncComputeNet(o) {
+      const W = NETC.weeksPerYear, M = NETC.monthsPerYear;
+      const pay = Math.max(0, parseFloat(o.pay) || 0);
+      const hours = Math.min(80, Math.max(1, parseFloat(o.hours) || 40));
+      let annBasic;
+      if (o.per === 'week')       annBasic = pay * W;
+      else if (o.per === 'month') annBasic = pay * M;
+      else if (o.per === 'year')  annBasic = pay;
+      else                        annBasic = pay * hours * W;
+      const basicWeekly = annBasic / W;
+      const hourly = o.per === 'hour' ? pay : (hours > 0 ? basicWeekly / hours : 0);
+      const ot15h = Math.max(0, parseFloat(o.ot15) || 0), ot20h = Math.max(0, parseFloat(o.ot20) || 0);
+      const ot15W = ot15h * 1.5 * hourly, ot20W = ot20h * 2 * hourly;
+      const otWeekly = ot15W + ot20W, otAnnual = otWeekly * W;
+      const bonusA = o.bonus ? NETC.bonusYear : 0;
+      const sscW = ncSscWeek(basicWeekly, !!o.born62), sscA = sscW * W;
+      const eligOT15 = !!o.useOT15 && basicWeekly <= NETC.ot15maxBasicWeek + 1e-9 && otAnnual > 0;
+      const qualOT = eligOT15 ? Math.min(otAnnual, NETC.ot15capYear) : 0;
+      const restOT = otAnnual - qualOT;
+      const tax = Math.max(0, ncBandTax(o.status, annBasic + bonusA + restOT) + NETC.ot15rate * qualOT);
+      const grossA = annBasic + bonusA + otAnnual;
+      const netA = grossA - sscA - tax;
+      const mw = NETC.minWage[String(o.age || '18')] || NETC.minWage['18'];
+      const effHourly = hours > 0 ? basicWeekly / hours : 0;
+      return {
+        hours, hourly, basicWeekly, annBasic,
+        ot15h, ot20h, ot15W, ot20W, otWeekly, otAnnual,
+        bonusA, sscW, sscA, eligOT15, qualOT, restOT, tax, grossA, netA,
+        netW: netA / W, netM: netA / M,
+        taxPct: grossA > 0 ? tax / grossA : 0, sscPct: grossA > 0 ? sscA / grossA : 0,
+        keepPct: grossA > 0 ? netA / grossA : 0,
+        minW: mw, effHourly, belowMin: hourly > 0 && effHourly < mw.hour - 1e-9
+      };
+    }
+    // This week's REAL estimate: the tracker already priced every logged shift
+    // with its Maltese rules — annualise that pace (×52), take off tax & SSC,
+    // divide back. cfg: { born62, bonus, status }
+    function ncRealWeekEstimate(grossWeek, cfg) {
+      const grossA = Math.max(0, grossWeek * 52);
+      const bonusA = cfg.bonus ? NETC.bonusYear : 0;
+      const sscW = ncSscWeek(grossWeek, !!cfg.born62);
+      const sscA = sscW * 52;
+      const tax = Math.max(0, ncBandTax(cfg.status || 'single', grossA + bonusA));
+      const netA = grossA + bonusA - sscA - tax;
+      return { grossA, bonusA, sscW, sscA, tax, netA, netW: netA / 52, keepPct: (grossA + bonusA) > 0 ? netA / (grossA + bonusA) : 0 };
+    }
+    // === NETC END ===
+
+    // ---------------- 💶 Take-Home Calc UI ----------------
+    function netcSaved() {
+      if (!DB.settings.netCalc || typeof DB.settings.netCalc !== 'object') DB.settings.netCalc = {};
+      return DB.settings.netCalc;
+    }
+    function netcTickRow(id, label, hint) {
+      return `
+          <label class="flex items-center gap-2 mb-2" style="cursor: pointer;">
+            <input type="checkbox" id="${id}" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" onchange="renderNetCalc()">
+            <span class="text-sm text-slate-900 font-semibold">${label}${hint ? ` <span class="text-xs text-slate-400 font-normal">${hint}</span>` : ''}</span>
+          </label>`;
+    }
+    function netcSetPer(p) {
+      document.querySelectorAll('[data-netc-per]').forEach(c => c.classList.toggle('selected', c.getAttribute('data-netc-per') === p));
+      renderNetCalc();
+    }
+    function netcSetHours(h) {
+      const el = document.getElementById('netc-hours');
+      if (el) el.value = h;
+      renderNetCalc();
+    }
+    function netcSetJob(j) {
+      document.querySelectorAll('[data-netc-job]').forEach(c => c.classList.toggle('selected', c.getAttribute('data-netc-job') === j));
+      const info = document.getElementById('netc-jobinfo');
+      if (info) info.innerHTML = (NETC.jobInfo[j] || '') + '<p class="text-xs text-slate-400 mt-2" style="margin-bottom:0;">ℹ️ Info only — the maths above uses your real wage either way ✅</p>';
+      renderNetCalc(true);
+    }
+    function netcBox(id) { const b = document.getElementById(id); return b ? b.checked : false; }
+    function netcVal(id) { const b = document.getElementById(id); return b ? b.value : ''; }
+    function netcPerSelected() {
+      const c = document.querySelector('[data-netc-per].selected');
+      return c ? c.getAttribute('data-netc-per') : 'hour';
+    }
+    function netcJobSelected() {
+      const c = document.querySelector('[data-netc-job].selected');
+      return c ? c.getAttribute('data-netc-job') : 'private';
+    }
+    function netcSaveState() {
+      const s = netcSaved();
+      s.amount = netcVal('netc-amount');
+      s.per = netcPerSelected();
+      s.hours = netcVal('netc-hours');
+      s.ot15 = netcVal('netc-ot15');
+      s.ot20 = netcVal('netc-ot20');
+      s.status = netcVal('netc-status') || 'single';
+      s.age = netcVal('netc-age') || '18';
+      s.born62 = netcBox('netc-born62');
+      s.bonus = netcBox('netc-bonus');
+      s.useOT15 = netcBox('netc-ot15tax');
+      s.job = netcJobSelected();
+      try { saveData(); } catch (e) {}
+    }
+
+    function openNetCalc() {
+      if (!DB.user) return;
+      const s = netcSaved();
+      const per = s.per || 'hour';
+      const job = s.job || 'private';
+      const amount = (s.amount != null && s.amount !== '') ? s.amount : (DB.settings.hourlyWage || '');
+      const hours = (s.hours != null && s.hours !== '') ? s.hours : 40;
+      const status = s.status || 'single';
+      const age = s.age || '18';
+      const statusOpts = Object.keys(NETC.statusNames).map(k => `<option value="${k}"${status === k ? ' selected' : ''}>${NETC.statusNames[k]}</option>`).join('');
+      openModal('💶 Take-Home Calc 2026 🇲🇹', `
+        <p class="text-xs text-slate-400 mb-3 text-center">What you <b>REALLY keep</b> after 🏛️ SSC + 🧾 tax — official Malta 2026 rules. Numbers update as you type ✨</p>
+        <div class="input-group">
+          <label>Your pay (before tax)</label>
+          <input type="number" id="netc-amount" class="input" inputmode="decimal" min="0" step="0.01" placeholder="e.g. 12.50" value="${amount}" oninput="renderNetCalc()">
+          <div class="flex gap-1 mt-2" style="flex-wrap: wrap;">
+            ${['hour', 'week', 'month', 'year'].map(p => `<button type="button" class="time-chip${per === p ? ' selected' : ''}" data-netc-per="${p}" onclick="netcSetPer('${p}')">per ${p}</button>`).join('')}
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Hours per week</label>
+          <input type="number" id="netc-hours" class="input" inputmode="decimal" min="1" max="80" step="0.5" value="${hours}" oninput="renderNetCalc()">
+          <div class="flex gap-1 mt-2" style="flex-wrap: wrap;">
+            ${[40, 37.5, 30, 25, 20].map(h => `<button type="button" class="time-chip" onclick="netcSetHours(${h})">${h}h</button>`).join('')}
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <div class="input-group flex-1">
+            <label>⏰ OT 1.5× (h/week)</label>
+            <input type="number" id="netc-ot15" class="input" inputmode="decimal" min="0" max="60" step="0.5" value="${s.ot15 != null ? s.ot15 : ''}" placeholder="0" oninput="renderNetCalc()">
+          </div>
+          <div class="input-group flex-1">
+            <label>⏰ OT 2× (h/week)</label>
+            <input type="number" id="netc-ot20" class="input" inputmode="decimal" min="0" max="60" step="0.5" value="${s.ot20 != null ? s.ot20 : ''}" placeholder="0" oninput="renderNetCalc()">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>👪 Tax status — 2026 official tables</label>
+          <select id="netc-status" class="input" onchange="renderNetCalc()">${statusOpts}</select>
+        </div>
+        <div class="input-group">
+          <label>📏 Your age (minimum-wage check)</label>
+          <select id="netc-age" class="input" onchange="renderNetCalc()">
+            <option value="18"${age === '18' ? ' selected' : ''}>18 or older</option>
+            <option value="17"${age === '17' ? ' selected' : ''}>17 years old</option>
+            <option value="16"${age === '16' ? ' selected' : ''}>Under 17</option>
+          </select>
+        </div>
+        <div style="background: var(--slate-50); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;">
+          ${netcTickRow('netc-born62', '🎂 <b>Born 1962 or later</b>', 'SSC cap €55.93/w — older: €49.04/w')}
+          ${netcTickRow('netc-bonus', '🎁 <b>Statutory bonus &amp; allowance</b>', '€512.52/year, full-timers')}
+          ${netcTickRow('netc-ot15tax', '⚡ <b>Overtime special 15% tax</b>', 'basic ≤ €375/w — first €10,000 OT')}
+          <p id="netc-ot15note" class="text-xs font-bold" style="display:none; margin: 4px 0 0;"></p>
+        </div>
+        <div class="input-group">
+          <label>🏛️🧑‍💼🏢 Who is your employer? (info card)</label>
+          <div class="flex gap-1" style="flex-wrap: wrap;">
+            <button type="button" class="time-chip${job === 'gov' ? ' selected' : ''}" data-netc-job="gov" onclick="netcSetJob('gov')">🏛️ Government</button>
+            <button type="button" class="time-chip${job === 'agency' ? ' selected' : ''}" data-netc-job="agency" onclick="netcSetJob('agency')">🧑‍💼 Agency</button>
+            <button type="button" class="time-chip${job === 'private' ? ' selected' : ''}" data-netc-job="private" onclick="netcSetJob('private')">🏢 Private</button>
+          </div>
+          <div id="netc-jobinfo" class="text-xs text-slate-600 mt-2" style="background: var(--slate-50); border-radius: 12px; padding: 10px 12px; line-height: 1.55;"></div>
+        </div>
+        <button class="btn btn-success" onclick="netCalcUseRealWeek()">🪄 Use my REAL week (my logged shifts)</button>
+        <div id="netc-result" class="mt-4"></div>
+      `);
+      const b62 = document.getElementById('netc-born62'); if (b62) b62.checked = s.born62 !== false;
+      const bon = document.getElementById('netc-bonus'); if (bon) bon.checked = s.bonus !== false;
+      const o15 = document.getElementById('netc-ot15tax'); if (o15) o15.checked = !!s.useOT15;
+      netcSetJob(job);
+      renderNetCalc(true);
+    }
+
+    function renderNetCalc(skipSave) {
+      const res = document.getElementById('netc-result');
+      if (!res) return;
+      const o = {
+        pay: parseFloat(netcVal('netc-amount')) || 0,
+        per: netcPerSelected(),
+        hours: parseFloat(netcVal('netc-hours')) || 40,
+        ot15: parseFloat(netcVal('netc-ot15')) || 0,
+        ot20: parseFloat(netcVal('netc-ot20')) || 0,
+        status: netcVal('netc-status') || 'single',
+        born62: netcBox('netc-born62'),
+        bonus: netcBox('netc-bonus'),
+        useOT15: netcBox('netc-ot15tax'),
+        age: netcVal('netc-age') || '18'
+      };
+      const note = document.getElementById('netc-ot15note');
+      if (note) {
+        if (o.useOT15) {
+          note.style.display = '';
+          if (o.ot15 + o.ot20 <= 0) { note.style.color = 'var(--warning)'; note.textContent = 'ℹ️ 15% OT rule ticked but no overtime hours yet.'; }
+          else {
+            const probe = ncComputeNet(o);
+            if (probe.eligOT15) { note.style.color = 'var(--success)'; note.textContent = '✅ You qualify! First ' + formatEuro(probe.qualOT) + '/year of OT gets the 15% tax.'; }
+            else { note.style.color = 'var(--warning)'; note.textContent = '⚠️ Basic pay over €375/week — the 15% OT rule does not apply, OT taxed normally.'; }
+          }
+        } else note.style.display = 'none';
+      }
+      if (o.pay <= 0) {
+        res.innerHTML = '<p class="text-center text-slate-400 py-3 text-sm">Type your pay above ☝️ and the numbers appear here ✨</p>';
+      } else {
+        const r = ncComputeNet(o);
+        const badge = r.belowMin
+          ? `<p class="text-xs font-bold mt-2" style="color: var(--error); text-align:center;">📏 ⚠️ BELOW the 2026 minimum for your age (${formatEuro(r.minW.hour)}/h) — check your contract!</p>`
+          : `<p class="text-xs font-bold mt-2" style="color: var(--success); text-align:center;">📏 ✅ Above the 2026 minimum wage${r.effHourly / r.minW.hour >= 1.01 ? ' (' + Math.round((r.effHourly / r.minW.hour - 1) * 100) + '% over)' : ''}</p>`;
+        const row = (lab, w, y, cls) => `<tr${cls ? ' style="font-weight:700;"' : ''}>
+            <td style="padding: 6px 4px; border-bottom: 1px solid var(--slate-100);">${lab}</td>
+            <td style="padding: 6px 4px; border-bottom: 1px solid var(--slate-100); text-align: right;" class="font-mono">${formatEuro(Math.abs(w))}</td>
+            <td style="padding: 6px 4px; border-bottom: 1px solid var(--slate-100); text-align: right;" class="font-mono">${formatEuro(Math.abs(y))}</td></tr>`;
+        res.innerHTML = `
+          <div style="background: linear-gradient(135deg, var(--success), #16a34a); color: white; border-radius: 14px; padding: 12px; text-align: center; margin-top: 8px;">
+            <p class="text-xs font-semibold opacity-90">💚 YOU KEEP — per week</p>
+            <p style="font-size: 30px;" class="font-mono font-bold" id="netc-netw">${formatEuro(r.netW)}</p>
+            <p class="text-xs font-semibold opacity-90">${formatEuro(r.netM)} / month · ${formatEuro(r.netA)} / year</p>
+            <p class="text-xs font-semibold mt-1" style="opacity: 0.95;">You keep ${(r.keepPct * 100).toFixed(1)}% · 🧾 tax ${(r.taxPct * 100).toFixed(1)}% · 🏛️ SSC ${(r.sscPct * 100).toFixed(1)}%</p>
+            ${badge}
+          </div>
+          <div style="background: var(--slate-50); border-radius: 14px; padding: 10px 12px; margin-top: 10px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+              <tr class="text-slate-400" style="font-size: 11px;">
+                <th style="text-align:left; padding: 4px;"></th><th style="text-align:right; padding: 4px;">per week</th><th style="text-align:right; padding: 4px;">per year</th>
+              </tr>
+              ${row('💶 Basic pay', r.basicWeekly, r.annBasic)}
+              ${r.ot15W > 0 ? row('⏰ Overtime 1.5×', r.ot15W, r.ot15W * 52) : ''}
+              ${r.ot20W > 0 ? row('⏰ Overtime 2×', r.ot20W, r.ot20W * 52) : ''}
+              ${r.bonusA > 0 ? row('🎁 Bonus & allowance', r.bonusA / 52, r.bonusA) : ''}
+              ${row('= Gross', r.grossA / 52, r.grossA, true)}
+              ${row('🏛️ SSC (NI) −', r.sscW, r.sscA)}
+              ${row('🧾 Income tax −', r.tax / 52, r.tax)}
+              <tr style="font-weight: 800; color: var(--success); font-size: 15px;">
+                <td style="padding: 8px 4px;">💚 YOU KEEP</td>
+                <td style="padding: 8px 4px; text-align: right;" class="font-mono">${formatEuro(r.netW)}</td>
+                <td style="padding: 8px 4px; text-align: right;" class="font-mono">${formatEuro(r.netA)}</td>
+              </tr>
+            </table>
+            <p class="text-xs text-slate-400 mt-2" style="margin-bottom: 0;">👪 Tax table used: <b>${NETC.statusNames[o.status]}</b> · Estimates from the official 2026 public bands (cfr.gov.mt · dier.gov.mt) — real payslips can differ by a cent or two.</p>
+          </div>`;
+      }
+      if (!skipSave) netcSaveState();
+    }
+
+    function netCalcUseRealWeek() {
+      const res = document.getElementById('netc-result');
+      if (!res || !DB.user) return;
+      const now = new Date();
+      const mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+      const sunEnd = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 7);
+      const mine = DB.shifts.filter(s => {
+        if (!s.finishTimestamp) return false;
+        const d = new Date(s.startTimestamp);
+        return d >= mon && d < sunEnd;
+      });
+      const cfg = { born62: netcBox('netc-born62'), bonus: netcBox('netc-bonus'), status: netcVal('netc-status') || 'single' };
+      if (!mine.length) {
+        res.innerHTML = '<div style="background: var(--slate-50); border-radius: 14px; padding: 16px; margin-top: 8px; text-align: center;"><p style="font-size: 26px;">🗓️</p><p class="text-sm text-slate-500 font-semibold">No finished shifts this week yet (Mon–Sun).<br>Finish a shift — then this button estimates your REAL week 🪄</p></div>';
+        return;
+      }
+      let gross = 0, secs = 0, otSecs = 0;
+      mine.forEach(s => {
+        const psecs = shiftPaidSeconds(s);
+        const p = calculateShiftPay(psecs, new Date(s.startTimestamp), shiftWage(s)); // 💶 per-day wages honoured
+        gross += p.pay;
+        secs += psecs;
+        otSecs += (p.overtimeSeconds || 0);
+      });
+      const r = ncRealWeekEstimate(gross, cfg);
+      const hoursText = formatDurationShort(secs);
+      const monTxt = formatDate(mon), sunTxt = formatDate(new Date(sunEnd.getTime() - 86400000));
+      res.innerHTML = `
+        <div style="background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; border-radius: 14px; padding: 12px; margin-top: 8px; text-align: center;">
+          <p class="text-xs font-semibold opacity-90">🪄 YOUR REAL WEEK (from your logged shifts)</p>
+          <p class="text-xs font-semibold opacity-80" style="margin-top:2px;">${monTxt} → ${sunTxt} · ${mine.length} shift${mine.length === 1 ? '' : 's'} · ${hoursText}</p>
+          <p style="font-size: 30px;" class="font-mono font-bold mt-2">${formatEuro(r.netW)}</p>
+          <p class="text-xs font-semibold opacity-90">≈ what you KEEP this week 💚</p>
+        </div>
+        <div style="background: var(--slate-50); border-radius: 14px; padding: 10px 12px; margin-top: 10px;">
+          <div class="flex justify-between py-1"><span class="text-sm text-slate-500 font-semibold">💶 Gross (with Sundays ×2, OT…)</span><span class="font-mono font-bold">${formatEuro(gross)}</span></div>
+          ${otSecs > 0 ? `<div class="flex justify-between py-1"><span class="text-sm text-slate-500 font-semibold">⏰ of which overtime</span><span class="font-mono font-bold" style="color: var(--warning);">${formatDurationShort(otSecs)}</span></div>` : ''}
+          <div class="flex justify-between py-1"><span class="text-sm text-slate-500 font-semibold">🏛️ SSC ≈</span><span class="font-mono font-bold">−${formatEuro(r.sscW)}</span></div>
+          <div class="flex justify-between py-1"><span class="text-sm text-slate-500 font-semibold">🧾 Income tax ≈</span><span class="font-mono font-bold">−${formatEuro(r.tax / 52)}</span></div>
+          ${r.bonusA > 0 ? `<div class="flex justify-between py-1"><span class="text-sm text-slate-500 font-semibold">🎁 Bonus pace</span><span class="font-mono font-bold">+${formatEuro(r.bonusA / 52)}</span></div>` : ''}
+          <div class="flex justify-between py-1 border-t border-slate-100 mt-1 pt-2" style="color: var(--success);"><span class="text-sm font-bold">💚 Keep ≈</span><span class="font-mono font-bold">${formatEuro(r.netW)}</span></div>
+          <p class="text-xs text-slate-400 mt-2" style="margin-bottom: 0;">📌 Estimate: assumes a whole year of weeks like this one (×52) so the yearly tax bands apply — real payslip tax also depends on your other weeks. 👪 ${NETC.statusNames[cfg.status]} · born-1962 cap ${cfg.born62 ? 'on' : 'off'} · tips: untick 🎁 bonus to compare.</p>
+        </div>`;
+      netcSaveState();
+    }
     // ==================== REPEATING REMINDER ALARM ====================
     // Rings (and vibrates) repeatedly until the user dismisses the reminder.
     let reminderAlarmInterval = null;
@@ -7292,5 +7631,5 @@ navigateTo = function (page) {
 bootOnlineLayer();
 
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2bb7f4b58d7edd0',t:'MTc4NjgzMTQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2c1a7223e1fb937',t:'MTc4Njg5NjAzNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
