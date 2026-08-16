@@ -435,6 +435,18 @@
       max-width: 320px;
     }
 
+    /* ===== v1.16.0 — calm, normal dark chat ===== */
+    .orbs { display: none; } /* the floating rainbow blobs are retired */
+    .chat-wallpaper { opacity: 1; background: radial-gradient(900px 420px at 12% 0%, rgba(74,144,217,0.10), transparent 60%), radial-gradient(900px 420px at 88% 100%, rgba(139,92,246,0.07), transparent 60%); }
+    .message.received { background: var(--slate-700); color: #fff; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 4px 15px rgba(0,0,0,0.35); }
+    .message.sent { box-shadow: 0 4px 15px rgba(0,0,0,0.35); }
+    .chat-input-container { background: rgba(30,58,95,0.92); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1); }
+    .chat-input { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); color: #fff; }
+    .chat-input::placeholder { color: var(--slate-400); }
+    .chat-btn.attach { background: rgba(255,255,255,0.1); color: var(--slate-300); }
+    .empty-chat-bubble { background: rgba(15,23,42,0.92); border: 1px solid rgba(255,255,255,0.14); color: #fff; }
+    .empty-chat-bubble .text-slate-900 { color: #fff; }
+    .empty-chat-bubble .text-slate-500 { color: var(--slate-400); }
     /* ===== History delete buttons ===== */
     .history-delete-btn {
       width: 38px; height: 38px;
@@ -1040,12 +1052,22 @@
         </div>
       </div>
       
+      <!-- 📨 Friend Requests — pinned at the top so no request ever goes unseen (v1.16.0) -->
+      <div class="card mt-4" id="requests-card-messages" style="display: none;">
+        <div class="card-padded">
+          <h3 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
+            <span style="font-size: 18px;">📨</span>
+            Friend Requests
+          </h3>
+          <div id="requests-list-messages"></div>
+        </div>
+      </div>
       <div id="conversations-list" class="pt-4"></div>
     </div>
 
     <!-- Chat Page -->
     <div class="page" id="page-chat" style="height: 100vh; flex-direction: column;">
-      <div class="bg-white border-b" style="padding: 12px 16px; padding-top: max(env(safe-area-inset-top), 12px); display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10;">
+      <div class="border-b" style="background: rgba(30,58,95,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 12px 16px; padding-top: max(env(safe-area-inset-top), 12px); display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10;">
         <button class="header-btn" onclick="navigateTo('messages')">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="15 18 9 12 15 6"></polyline>
@@ -1053,8 +1075,8 @@
         </button>
         <div class="avatar" id="chat-avatar" style="width: 40px; height: 40px; font-size: 14px;"></div>
         <div class="flex-1">
-          <p class="font-bold text-slate-900" id="chat-name"></p>
-          <p class="text-xs text-slate-500" id="chat-status">Online</p>
+          <p class="font-bold text-white" id="chat-name"></p>
+          <p class="text-xs" style="color: var(--slate-300);" id="chat-status">Online</p>
         </div>
       </div>
       
@@ -1080,7 +1102,7 @@
       </div>
       
       <div id="typing-indicator" class="hidden px-4 pb-2">
-        <div class="typing-indicator" style="background: white; width: fit-content; padding: 10px 16px; border-radius: 16px; border: 1px solid var(--slate-100);">
+        <div class="typing-indicator" style="background: var(--slate-700); width: fit-content; padding: 10px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.12);">
           <div class="typing-dot"></div>
           <div class="typing-dot"></div>
           <div class="typing-dot"></div>
@@ -1264,7 +1286,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.14.0 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.19.0 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -1332,6 +1354,14 @@
               <input type="checkbox" id="settings-overtime" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" onchange="setOvertimeOn(this.checked)">
               <span class="text-sm text-slate-900 font-semibold">⏰ <b>Overtime</b> — hours beyond 8h stack ×1.5</span>
             </label>
+            <label class="flex items-center gap-2 mb-2" style="cursor: pointer;">
+              <input type="checkbox" id="settings-break-on" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" onchange="toggleBreakDefault(this.checked)">
+              <span class="text-sm text-slate-900 font-semibold">🍔 <b>Unpaid break</b> — default: cut it from every new shift</span>
+            </label>
+            <div id="settings-break-row" class="flex items-center gap-2 mb-2" style="display: none; margin-left: 28px;">
+              <input type="number" id="settings-break-min" class="input" inputmode="numeric" min="5" max="720" step="5" style="max-width: 110px; margin-bottom: 0;" onchange="setBreakDefaultMin(this.value)">
+              <span class="text-xs text-slate-500 font-semibold">minutes off, unpaid</span>
+            </div>
             <p class="text-xs text-slate-400 mt-2">The engine applies these rules automatically to every shift &amp; the live dashboard. 🧮 Use Pay Calc (Home) for one-off what-if checks.</p>
           </div>
         </div>
@@ -1387,11 +1417,11 @@
           </h3>
           <p class="text-xs text-slate-500 mb-3">Tap a topic to open it 👇</p>
           <details class="howto-item"><summary>⏱️ Start &amp; stop a shift</summary><p>Home → big blue <b>START</b> button — the clock ticks and counts your € live. Tap it again (FINISH) when work ends. Forgot to press start? <b>My Earnings</b> → ＋ Add Shift.</p></details>
-          <details class="howto-item"><summary>🔁 Auto shifts (set once, runs alone)</summary><p>Settings → <b>🔁 Add Shift (auto)</b> → pick your days → tap a quick time (like ☀️ 07–19) → Save. The clock starts &amp; stops <b>by itself</b> on those days. 🔵 blue dot on the calendar = auto shift planned. Tap the day → ✏️ change or 🗑️ remove just that day. Break not paid? Tick 🍔 <b>Unpaid break</b> in that same form and set the minutes.</p></details>
+          <details class="howto-item"><summary>🔁 Auto shifts (set once, runs alone)</summary><p>Settings → <b>🔁 Add Shift (auto)</b> → pick your days → tap a quick time (like ☀️ 07–19) → Save. The clock starts &amp; stops <b>by itself</b> on those days. 🔵 blue dot on the calendar = auto shift planned. Tap the day → ✏️ change or 🗑️ remove just that day. <b>Repeat</b> choices: every week, this week only, <b>📅 next week only</b> (fills next Mon–Sun, then stops — perfect when the new roster just landed), or until the end of the month. 💶 <b>Different wage on different days?</b> In that same form, <b>wage for each day (optional)</b> — type a €/h next to each selected day that pays differently; empty days keep your normal rate, and everything is calculated with it automatically (payslips, payday, live counter). Break not paid? Tick 🍔 <b>Unpaid break</b> in that same form and set the minutes.</p></details>
           <details class="howto-item"><summary>🗓️ Calendar</summary><p><b>‹ ›</b> = previous / next month, <b>« »</b> = jump a whole year. ★ = Maltese public holiday (special pay 💶). Tap any day to see its shifts, notes and reminders.</p></details>
-          <details class="howto-item"><summary>💶 Wage &amp; pay rules</summary><p>Settings → <b>💶 My Hourly Wage</b>: set your €/hour and tick what your workplace pays (Sunday ×2, holidays, rest days, overtime). Pay is then counted automatically on every shift. Home → <b>🧮 Pay Calc</b> = quick what-if maths. 🍔 <b>Unpaid break?</b> Tick it in any shift form (add / edit / auto) or right here in Pay Calc — those minutes come straight off the paid time, e.g. 12h − 30m = 11.5h paid. 🗓️ <b>Payday tracking?</b> Settings → <b>🗓️ Payday</b> → tick <b>Enable</b> → pick your payday day (or set the exact next date). The dashboard then shows the <b>calendar month AND the payday period</b> (like 15 Aug → 14 Sep), and <b>📜 Salary History</b> keeps every finished period with its full maths — the normal monthly payslip stays exactly as it was.</p></details>
+          <details class="howto-item"><summary>💶 Wage &amp; pay rules</summary><p>Settings → <b>💶 My Hourly Wage</b>: set your €/hour and tick what your workplace pays (Sunday ×2, holidays, rest days, overtime). Pay is then counted automatically on every shift. Home → <b>🧮 Pay Calc</b> = quick what-if maths. 🍔 <b>Unpaid break?</b> Tick it in any shift form (add / edit / auto) or right here in Pay Calc — those minutes come straight off the paid time, e.g. 12h − 30m = 11.5h paid. <b>Same break every day?</b> Settings → <b>💶 My Hourly Wage</b> → tick <b>🍔 Unpaid break</b> and set the minutes once — every NEW shift (⏱️ Start/Finish too, plus auto rules) starts with it ticked; you can still change or untick it per shift. 🗓️ <b>Payday tracking?</b> Settings → <b>🗓️ Payday</b> → tick <b>Enable</b> → pick your payday day (or set the exact next date). The dashboard then shows the <b>calendar month AND the payday period</b> (like 15 Aug → 14 Sep), and <b>📜 Salary History</b> keeps every finished period with its full maths — the normal monthly payslip stays exactly as it was.</p></details>
           <details class="howto-item"><summary>📄 Payslips &amp; 📋 rosters</summary><p>My Earnings → <b>📄 Payslip</b>: the app BUILDS your payslip from your hours (⬇️ CSV for Excel, or 🖨️ Print → Save as PDF). My Earnings → <b>📎 Upload Payslip</b>: add the payslip your employer gives you (photo or PDF) so everything sits in one safe place. My Earnings → <b>📋 Upload Roster</b>: keep the roster your boss gives out (photo or PDF) — tag it like “17–30 August” and find it any time under <b>My Roster Files</b>.</p></details>
-          <details class="howto-item"><summary>💬 Co-workers &amp; chat</summary><p>👥 Co-workers → find a name → <b>Add Friend</b>. After they accept, chat in 💬 Messages — messages arrive even when their app is closed.</p></details>
+          <details class="howto-item"><summary>💬 Co-workers &amp; chat</summary><p>👥 Co-workers → find a name → <b>Add Friend</b>. When someone adds <b>you</b>, the request waits for you at the TOP of 💬 Messages (and in 👥 Co-workers) with <b>Accept / Decline</b> — the red dot on Messages counts requests too. After accepting, chat in 💬 Messages — messages arrive even when their app is closed.</p></details>
           <details class="howto-item"><summary>🔔 Notifications</summary><p>Settings → <b>🔔 Push Notifications</b> → Enable → then 📣 Send test to try it. 🍏 iPhone: first Share → <b>Add to Home Screen</b>, then open the app from there.</p></details>
           <details class="howto-item"><summary>☁️ Backup &amp; new phone</summary><p>Everything saves to your account automatically (green ☁️ Cloud Backup card). New or lost phone: install the app, <b>sign in</b> — your wage, shifts, pay rules, notes and payslip files come back by themselves. 📱→📲</p></details>
         </div>
@@ -1965,6 +1995,7 @@
       if (shift) {
         shift.finishTimestamp = now.toISOString();
         shift.totalDuration = getElapsedSeconds(shift.startTimestamp);
+        if (breakDefaultMin() > 0 && !(parseInt(shift.breakMin, 10) > 0)) shift.breakMin = breakDefaultMin(); // 🍔 v1.15.0
       }
       DB.user.workingStatus = 'NOT_WORKING';
       DB.user.currentShiftId = null;
@@ -2306,6 +2337,13 @@
       return { mode: 'normal', mult: 1, label: 'Normal day', emoji: '' };
     }
 
+    // 💶 v1.18.0 — some sites pay a different rate. A shift may carry its own wage
+    // (from its auto rule); otherwise the normal My Hourly Wage rate applies.
+    function shiftWage(shift) {
+      const own = parseFloat(shift && shift.wage);
+      if (isFinite(own) && own > 0) return own;
+      return parseFloat(DB.settings.hourlyWage) || 0;
+    }
     function calculateShiftPay(durationSeconds, date, wage) {
       const secs = Math.max(0, Math.floor(durationSeconds || 0));
       const regularSeconds = Math.min(secs, REGULAR_SECONDS_PER_DAY);
@@ -2337,6 +2375,37 @@
     // ==================== 🍔 UNPAID BREAK (v1.11.0) ====================
     // Some jobs clock 12 hours but only pay 11.5 — the break is unpaid.
     // shift.breakMin = unpaid break minutes (0 / missing = whole shift is paid).
+    // 🍔 Default unpaid break (v1.15.0) — set once in Settings; every NEW shift form starts with it.
+    // Per-shift forms can still override (untick or change the minutes). Old shifts are never touched.
+    function breakDefaultMin() {
+      if (!DB.settings.breakDefaultOn) return 0;
+      let b = parseInt(DB.settings.breakDefaultMin, 10);
+      if (!isFinite(b) || b <= 0) b = 30;
+      return Math.min(b, 720);
+    }
+    function toggleBreakDefault(on) {
+      DB.settings.breakDefaultOn = !!on;
+      if (on && !(parseInt(DB.settings.breakDefaultMin, 10) > 0)) DB.settings.breakDefaultMin = 30;
+      saveData();
+      refreshBreakDefaultSettings();
+      showToast(on ? 'Default unpaid break ON 🍔 — new shifts start with it' : 'Default unpaid break OFF', 'success');
+    }
+    function setBreakDefaultMin(v) {
+      let b = parseInt(v, 10);
+      if (!isFinite(b) || b < 5) b = 5;
+      DB.settings.breakDefaultMin = Math.min(b, 720);
+      saveData();
+      refreshBreakDefaultSettings();
+    }
+    function refreshBreakDefaultSettings() {
+      const on = !!DB.settings.breakDefaultOn;
+      const cb = document.getElementById('settings-break-on');
+      const row = document.getElementById('settings-break-row');
+      const inp = document.getElementById('settings-break-min');
+      if (cb) cb.checked = on;
+      if (row) row.style.display = on ? 'flex' : 'none';
+      if (inp) inp.value = breakDefaultMin() || 30;
+    }
     function shiftBreakMin(shift) {
       let b = parseInt(shift && shift.breakMin, 10);
       if (!isFinite(b) || b < 0) b = 0;
@@ -2416,7 +2485,7 @@
         const date = new Date(shift.startTimestamp);
         const secs = shiftPaidSeconds(shift); // 🍔 v1.11.0: paid seconds — totalDuration is held in ms
         totalSeconds += secs;
-        const p = calculateShiftPay(secs, date, wage);
+        const p = calculateShiftPay(secs, date, shiftWage(shift)); // 💶 v1.18.0
         overtimeSeconds += p.overtimeSeconds;
         totalEarnings += p.pay;
         if (date >= startOfLastMonth && date < endOfLastMonth) lastMonthEarnings += p.pay;
@@ -2529,7 +2598,7 @@
         const t = d.getTime();
         if (t < s0 || t > e1) return;
         const secs = shiftPaidSeconds(sh);
-        const p = calculateShiftPay(secs, d, wage);
+        const p = calculateShiftPay(secs, d, shiftWage(sh)); // 💶 v1.18.0
         seconds += secs; otSeconds += p.overtimeSeconds; pay += p.pay; count++;
         rows.push({ date: d, start: sh.startTimestamp, finish: sh.finishTimestamp, secs: secs, pay: p.pay, emoji: p.emoji, label: p.label, mode: p.mode });
       });
@@ -2946,7 +3015,7 @@
           <label>Hours worked (e.g. 8 or 9.5)</label>
           <input type="number" id="paycalc-hours" class="input" inputmode="decimal" min="0" step="0.25" value="8" onkeypress="if(event.key==='Enter')runPayCalculator()">
         </div>
-        ${breakFieldsHTML('calc', 0)}
+        ${breakFieldsHTML('calc', breakDefaultMin())}
         <p class="text-xs text-slate-400 mb-2" style="text-align: center;">Your rate: <b>${formatEuro(wage)}/h</b> · 🇲🇹 ticks auto-check from the date — override as you like!</p>
         <div style="background: var(--slate-50); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;">
           ${tick('paycalc-sunday', '🔴 <b>Sunday Work</b> — double time (×2)')}
@@ -3088,6 +3157,12 @@
     }
 
     // ==================== MESSAGES BADGE ====================
+    // 📨 Friend Requests card on the Messages page (v1.16.0).
+    // Offline face shows nothing — the online layer replaces this with the real one.
+    function renderMessageRequests() {
+      const card = document.getElementById('requests-card-messages');
+      if (card) card.style.display = 'none';
+    }
     function updateMessagesBadge() {
       const badge = document.getElementById('msg-badge');
       if (!badge || !DB.user) return;
@@ -3336,7 +3411,7 @@
       
       if (shift) {
         const wageNow = parseFloat(DB.settings.hourlyWage) || 0;
-        const payInfo = calculateShiftPay(shiftPaidSeconds(shift), date, wageNow); // 🍔 v1.11.0 paid time
+        const payInfo = calculateShiftPay(shiftPaidSeconds(shift), date, shiftWage(shift)); // 🍔 v1.11.0 paid time · 💶 v1.18.0
         content += `
           <div class="p-4 rounded-xl mb-4" style="background: linear-gradient(135deg, var(--success), #16a34a); color: white;">
             <p class="text-sm font-semibold mb-1 opacity-90">Shift</p>
@@ -3681,6 +3756,7 @@
       const otT = document.getElementById('settings-overtime');
       if (otT) otT.checked = DB.settings.overtimeOn !== false;
       try { refreshPaydaySettings(); } catch (e) {}
+      try { refreshBreakDefaultSettings(); } catch (e) {}
 
       const nameRow = document.getElementById('settings-name');
       if (nameRow) nameRow.textContent = DB.user.name;
@@ -3865,6 +3941,7 @@
     let currentConversation = null;
 
     function refreshMessages() {
+      try { renderMessageRequests(); } catch (e) {} // 📨 v1.16.0
       const listEl = document.getElementById('conversations-list');
       updateMessagesBadge();
       
@@ -4790,7 +4867,7 @@
         .map(x => {
           const secs = shiftPaidSeconds(x.shift); // 🍔 v1.11.0 paid time
           const brkMin = shiftBreakMin(x.shift);
-          const p = calculateShiftPay(secs, x.date, wage);
+          const p = calculateShiftPay(secs, x.date, shiftWage(x.shift)); // 💶 v1.18.0
           const holiday = getMaltaHolidayName(x.date);
           return {
             date: x.date,
@@ -4971,7 +5048,7 @@
       DB.shifts.filter(s => s.finishTimestamp && s.totalDuration).forEach(shift => {
         const date = new Date(shift.startTimestamp);
         const secs = shiftPaidSeconds(shift); // 🍔 v1.11.0 paid time
-        const p = calculateShiftPay(secs, date, wage);
+        const p = calculateShiftPay(secs, date, shiftWage(shift)); // 💶 v1.18.0
         const bucket = series.find(x => date >= x.start && date < x.end);
         if (bucket) bucket.amount += p.pay;
       });
@@ -5082,12 +5159,23 @@
         const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
         return new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 7).getTime() - 1;
       }
+      if (repeat === 'nextweek') { // 📅 v1.17.0 — next Mon–Sun only, then stop
+        const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+        return new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 14).getTime() - 1;
+      }
       if (repeat === 'month') { // through the last day of the current month
         return new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime() - 1;
       }
       return null; // 'weekly' → keeps going
     }
 
+    // 📅 v1.17.0 — "next week only" rules start filling on NEXT Monday 00:00, not today
+    function autoRuleFrom(repeat) {
+      if (repeat !== 'nextweek') return null;
+      const now = new Date();
+      const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+      return new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 7).getTime();
+    }
     function schedTimesFor(dateObj, startHHMM, endHHMM) {
       const sh = parseInt(startHHMM.split(':')[0], 10), sm = parseInt(startHHMM.split(':')[1], 10);
       const eh = parseInt(endHHMM.split(':')[0], 10), em = parseInt(endHHMM.split(':')[1], 10);
@@ -5126,6 +5214,11 @@
         schedStart: se[0].toISOString(),
         schedEnd: se[1].toISOString(),
         breakMin: rule.breakMin || 0, // 🍔 v1.11.0 unpaid break
+        wage: (function () { // 💶 v1.19.0 — this day's rate from the grid (old single-rate rules still honoured)
+          const dw = rule.dayWages ? parseFloat(rule.dayWages[dayDate.getDay()]) : NaN;
+          if (isFinite(dw) && dw > 0) return dw;
+          return (rule.wage != null && rule.wage > 0) ? rule.wage : null;
+        })(),
         startTimestamp: null,
         finishTimestamp: null,
         totalDuration: null
@@ -5148,6 +5241,7 @@
         kept.forEach(r => {
           if (r.enabled === false) return;
           if (r.until && dayDate.getTime() > r.until) return;
+          if (r.from && dayDate.getTime() < r.from) return; // 📅 v1.17.0 — next-week plans wait patiently
           if ((r.days || []).indexOf(dayDate.getDay()) === -1) return;
           if (materializeRuleForDate(r, dayDate)) changed = true;
         });
@@ -5235,6 +5329,7 @@
     function autoRepeatLabel(r) {
       if (r.repeat === 'month') return 'until the end of this month';
       if (r.repeat === 'week') return 'this week only';
+      if (r.repeat === 'nextweek') return 'next week only 📅'; // v1.17.0
       return 'every week';
     }
 
@@ -5252,7 +5347,7 @@
             <span style="font-size: 20px;">🔁</span>
             <div class="flex-1">
               <p class="font-semibold text-slate-900 text-sm">${humanizeAutoDays(r.days)} · ${r.start} → ${r.end}</p>
-              <p class="text-xs text-slate-500">${autoRepeatLabel(r)}${r.enabled === false ? ' · ⏸ paused' : ''}${(r.breakMin || 0) > 0 ? ' · 🍔 −' + r.breakMin + 'm break' : ''}</p>
+              <p class="text-xs text-slate-500">${autoRepeatLabel(r)}${r.enabled === false ? ' · ⏸ paused' : ''}${(r.breakMin || 0) > 0 ? ' · 🍔 −' + r.breakMin + 'm break' : ''}${autoDayWageChip(r)}</p>
             </div>
             <input type="checkbox" title="On / off" style="width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0;" ${r.enabled !== false ? 'checked' : ''} onchange="toggleAutoRule('${r.id}', this.checked)">
             <button title="Edit" aria-label="Edit" onclick="openAutoShiftModal('${r.id}')" style="background: var(--slate-100); border: none; border-radius: 8px; padding: 8px; cursor: pointer; color: var(--slate-600); font-size: 14px;">✏️</button>
@@ -5310,7 +5405,7 @@
         <div class="input-group">
           <label>Which days?</label>
           <div class="flex gap-1" style="flex-wrap: wrap;">
-            ${AUTO_DAY_ORDER.map(d => `<button type="button" class="day-chip${selDays.indexOf(d) !== -1 ? ' selected' : ''}" data-dow="${d}" onclick="this.classList.toggle('selected')">${AUTO_DAY_NAMES[d]}</button>`).join('')}
+            ${AUTO_DAY_ORDER.map(d => `<button type="button" class="day-chip${selDays.indexOf(d) !== -1 ? ' selected' : ''}" data-dow="${d}" onclick="this.classList.toggle('selected'); refreshAutoDayWages()">${AUTO_DAY_NAMES[d]}</button>`).join('')}
           </div>
         </div>
         <div class="input-group">
@@ -5339,9 +5434,15 @@
             <option value="weekly"${repeat === 'weekly' ? ' selected' : ''}>Every week — keeps going</option>
             <option value="week"${repeat === 'week' ? ' selected' : ''}>This week only</option>
             <option value="month"${repeat === 'month' ? ' selected' : ''}>Until the end of this month</option>
+            <option value="nextweek"${repeat === 'nextweek' ? ' selected' : ''}>Next week only — starts Monday 📅</option>
           </select>
         </div>
-        ${breakFieldsHTML('auto', editing ? editing.breakMin : 0)}
+        <div class="input-group">
+          <label>💶 Setup wage for each day selected (optional)</label>
+          <div id="auto-daywages"></div>
+          <p class="text-xs text-slate-400 mt-1">Set a €/h next to each day that pays differently — empty days keep your normal rate. The app counts it everywhere (payslips, payday, live counter).</p>
+        </div>
+        ${breakFieldsHTML('auto', editing ? editing.breakMin : breakDefaultMin())}
         <p class="text-xs text-slate-400 mb-3">💡 Overnight works too (e.g. 22:00 → 06:00). Each added shift can still be edited or removed from its calendar day.</p>
         <p id="auto-error" class="text-error text-center font-semibold"></p>
         <div class="flex gap-3" style="flex-wrap: wrap;">
@@ -5349,9 +5450,45 @@
           <button class="btn btn-success flex-1" onclick="saveAutoShift('${editing ? editing.id : ''}')">${editing ? 'Save Changes' : 'Add Auto Shift'}</button>
         </div>
       `);
+      const _dwPreset = {};
+      if (editing) {
+        const _src = (editing.dayWages && typeof editing.dayWages === 'object') ? editing.dayWages : {};
+        Object.keys(_src).forEach(k => { if (_src[k] != null && _src[k] !== '') _dwPreset[k] = _src[k]; });
+        if (!Object.keys(_dwPreset).length && editing.wage > 0) (editing.days || []).forEach(d => { _dwPreset[d] = editing.wage; }); // old single-rate rules open pre-filled per-day
+      }
+      refreshAutoDayWages(_dwPreset);
     }
 
     // Quick-set chips: ☀️ 07–19, 🌙 19–07… (v1.9.1 — never mixed up with weekday chips)
+    // 💶 v1.19.0 — setup wage for each selected day (some sites pay differently every day).
+    // Empty boxes keep the normal My Hourly Wage rate.
+    function readAutoDayWagesFromInputs() {
+      const map = {};
+      document.querySelectorAll('#auto-daywages input[data-dw]').forEach(inp => { map[inp.dataset.dw] = inp.value; });
+      return map;
+    }
+    function refreshAutoDayWages(presetMap) {
+      const box = document.getElementById('auto-daywages');
+      if (!box) return;
+      const prev = presetMap || readAutoDayWagesFromInputs();
+      const selDays = [];
+      document.querySelectorAll('.day-chip.selected').forEach(c => selDays.push(parseInt(c.dataset.dow, 10)));
+      const ordered = AUTO_DAY_ORDER.filter(d => selDays.indexOf(d) !== -1);
+      if (!ordered.length) { box.innerHTML = '<p class="text-xs text-slate-400">Pick days above first 🙂</p>'; return; }
+      box.innerHTML = ordered.map(d => `
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-sm font-bold text-slate-900" style="width: 46px;">${AUTO_DAY_NAMES[d]}</span>
+          <input type="number" class="input" data-dw="${d}" inputmode="decimal" min="0" max="99" step="0.01" placeholder="normal rate" value="${prev[d] != null ? prev[d] : ''}" style="max-width: 130px; margin-bottom: 0;">
+          <span class="text-xs text-slate-500 font-semibold">€/h on ${AUTO_DAY_NAMES[d]}s</span>
+        </div>`).join('');
+    }
+    function autoDayWageChip(r) {
+      const src = (r.dayWages && typeof r.dayWages === 'object') ? r.dayWages : null;
+      if (src && AUTO_DAY_ORDER.some(d => parseFloat(src[d]) > 0)) {
+        return ' · 💶 ' + AUTO_DAY_ORDER.filter(d => parseFloat(src[d]) > 0).map(d => AUTO_DAY_NAMES[d] + ' €' + src[d]).join(' · ');
+      }
+      return (r.wage > 0) ? ' · 💶 €' + r.wage + '/h there' : '';
+    }
     function presetAutoTimes(btn) {
       const s = document.getElementById('auto-start') || document.getElementById('auto-entry-start');
       const e = document.getElementById('auto-end') || document.getElementById('auto-entry-end');
@@ -5372,6 +5509,16 @@
       if (!days.length) return fail('Pick at least one day 🙂');
       if (!start || !end) return fail('Set both the start and end times');
       const brkAuto = readBreakForm('auto'); // 🍔 v1.11.0
+      const dayWages = {}; // 💶 v1.19.0 — optional €/h per selected day
+      let _badDay = null;
+      document.querySelectorAll('#auto-daywages input[data-dw]').forEach(inp => {
+        const raw = String(inp.value || '').trim();
+        if (raw === '') return;
+        const v = parseFloat(raw);
+        if (!isFinite(v) || v <= 0 || v > 99) { _badDay = AUTO_DAY_NAMES[parseInt(inp.dataset.dw, 10)] || 'day'; return; }
+        dayWages[inp.dataset.dw] = Math.round(v * 100) / 100;
+      });
+      if (_badDay) return fail('The ' + _badDay + ' wage looks off — between €0.01 and €99, or leave it empty 🙂');
       if (brkAuto > 0) {
         const probe = schedTimesFor(new Date(2026, 0, 5), start, end);
         if (brkAuto * 60000 >= probe[1].getTime() - probe[0].getTime()) return fail('The break cannot be as long as the whole shift 😄');
@@ -5380,15 +5527,19 @@
       if (ruleId) {
         const r = autoRules().find(x => x.id === ruleId);
         if (!r) return fail('Auto shift not found — please reopen it');
+        const _sameRepeat = (r.repeat === repeat); // 📅 v1.17.0 — keep the window when the repeat didn't change
         r.days = days; r.start = start; r.end = end; r.repeat = repeat;
-        r.until = autoRuleUntil(repeat); r.enabled = true;
+        r.until = (_sameRepeat && r.until) ? r.until : autoRuleUntil(repeat); r.enabled = true;
+        r.from = (_sameRepeat && r.from) ? r.from : autoRuleFrom(repeat); // 📅 v1.17.0
         r.breakMin = brkAuto; // 🍔 v1.11.0
+        r.dayWages = dayWages; // 💶 v1.19.0
+        delete r.wage; // the one-rate field retires
         // regenerate this rule's not-yet-started days with the new pattern
         DB.shifts = DB.shifts.filter(s => !(s.auto && !s.startTimestamp && !s.finishTimestamp && s.autoKey && s.autoKey.indexOf(ruleId + '|') === 0));
       } else {
         autoRules().push({
           id: generateId(), days: days, start: start, end: end,
-          repeat: repeat, until: autoRuleUntil(repeat), enabled: true, createdAt: Date.now(), breakMin: brkAuto // 🍔 v1.11.0
+          repeat: repeat, until: autoRuleUntil(repeat), from: autoRuleFrom(repeat), enabled: true, createdAt: Date.now(), breakMin: brkAuto, dayWages: dayWages // 🍔 v1.11.0 · 💶 v1.19.0
         });
       }
       saveData();
@@ -5525,7 +5676,7 @@
           <label>Clocked out</label>
           <input type="datetime-local" id="add-shift-finish" class="input" value="${toDatetimeLocalValue(afternoon.toISOString())}" onchange="updateAddShiftPreview()" oninput="updateAddShiftPreview()">
         </div>
-        ${breakFieldsHTML('add', 0)}
+        ${breakFieldsHTML('add', breakDefaultMin())}
         <p id="add-shift-error" class="text-error text-center font-semibold"></p>
         <div class="p-4 rounded-xl mb-4 text-center" style="background: var(--slate-50);" id="add-shift-preview"></div>
         <div class="flex gap-3">
@@ -5574,7 +5725,7 @@
 
     // ==================== LIVE PAY COUNTER ====================
     function liveEarningsText(elapsedMs) {
-      const wage = parseFloat(DB.settings.hourlyWage) || 0;
+      const wage = shiftWage(DB.shifts.find(s => s.id === DB.user.currentShiftId)); // 💶 v1.18.0
       if (wage <= 0 || !DB.user || !DB.user.currentShiftStart) return '';
       const secs = Math.max(0, Math.floor(elapsedMs / 1000));
       const p = calculateShiftPay(secs, new Date(DB.user.currentShiftStart), wage);
@@ -6452,6 +6603,7 @@ function renderSocialUI(soft) {
   refreshFriendsList();
   if (currentPage === 'coworkers' || !soft) refreshCoworkers();
   if (currentPage === 'messages') renderConversationsList();
+  renderMessageRequests(); // 📨 v1.16.0
   updateMessagesBadge();
 }
 
@@ -6588,6 +6740,7 @@ function refreshMessages() {
   if (!ONLINE.active) { OFFLINE_IMPL.refreshMessages(); return; }
   refreshServerConversations(true); // refresh in background
   renderConversationsList();        // instant paint with cache
+  renderMessageRequests();          // 📨 v1.16.0 — pinned requests card
 }
 
 async function refreshServerConversations(soft) {
@@ -6606,6 +6759,32 @@ async function refreshServerConversations(soft) {
   ONLINE.unreadKnown = true;
   ONLINE.totalUnread = newUnread;
   renderConversationsList();
+  updateMessagesBadge();
+}
+
+// 📨 v1.16.0 — incoming friend requests pinned at the top of the Messages page,
+// so a request can NEVER appear-and-disappear unseen again.
+function renderMessageRequests() {
+  const card = document.getElementById('requests-card-messages');
+  const list = document.getElementById('requests-list-messages');
+  if (!card || !list) return;
+  if (!ONLINE.active || !ONLINE.incoming.length) {
+    card.style.display = 'none';
+    list.innerHTML = '';
+    updateMessagesBadge();
+    return;
+  }
+  list.innerHTML = ONLINE.incoming.map(r => `
+    <div class="friend-row">
+      <div class="avatar">${avatarInnerHTML(r.user)}</div>
+      <div class="flex-1 min-w-0">
+        <p class="font-bold text-slate-900" style="font-size: 15px;">${escapeHtml(r.user.name)}</p>
+        <p class="text-xs text-slate-500">${escapeHtml(r.user.email)} · wants to be friends</p>
+      </div>
+      <button class="btn btn-success friend-btn" onclick="respondServerRequest('${r.id}', true)">Accept</button>
+      <button class="btn friend-btn" style="background: var(--slate-200); color: var(--slate-600);" onclick="respondServerRequest('${r.id}', false)">Decline</button>
+    </div>`).join('');
+  card.style.display = 'block';
   updateMessagesBadge();
 }
 
@@ -6774,7 +6953,7 @@ function updateMessagesBadge() {
   if (!badge || !DB.user) return;
   if (!ONLINE.active) { OFFLINE_IMPL.updateMessagesBadge(); return; }
   const localBotUnread = DB.messages.filter(m => !m.read && m.senderId !== DB.user.id).length;
-  const total = localBotUnread + ONLINE.totalUnread;
+  const total = localBotUnread + ONLINE.totalUnread + (ONLINE.incoming ? ONLINE.incoming.length : 0); // 📨 v1.16.0: requests count too
   badge.textContent = total;
   badge.classList.toggle('hidden', total === 0);
 }
@@ -7113,5 +7292,5 @@ navigateTo = function (page) {
 bootOnlineLayer();
 
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2b7441f6fbcedba',t:'MTc4Njc4NzEyMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2c03c68591d0f5e',t:'MTc4Njg4MTE3OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
