@@ -238,6 +238,13 @@
     .chat-btn.send { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; box-shadow: 0 4px 15px rgba(74, 144, 217, 0.4); }
     .chat-btn.send:hover { transform: scale(1.05); }
     .chat-btn.attach { background: var(--slate-100); color: var(--slate-500); }
+    /* 📷 v1.21.0 — fullscreen photo viewer for chat pictures */
+    .photo-viewer { position: fixed; inset: 0; z-index: 99999; background: rgba(2, 4, 12, 0.94); display: flex; align-items: center; justify-content: center; padding: 14px; animation: pvFade 0.15s ease; }
+    .photo-viewer img { max-width: 100%; max-height: 86vh; border-radius: 12px; box-shadow: 0 10px 60px rgba(0,0,0,0.6); }
+    .photo-viewer .photo-close { position: absolute; top: max(env(safe-area-inset-top), 14px); right: 16px; width: 44px; height: 44px; border-radius: 50%; border: none; background: rgba(255,255,255,0.14); color: white; font-size: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .chat-photo { cursor: pointer; transition: transform 0.15s ease; }
+    .chat-photo:active { transform: scale(0.96); }
+    @keyframes pvFade { from { opacity: 0; } to { opacity: 1; } }
     
     /* Typing indicator */
     .typing-indicator { display: flex; gap: 4px; padding: 12px 16px; }
@@ -1064,6 +1071,17 @@
         </div>
       </div>
       <div id="conversations-list" class="pt-4"></div>
+      <!-- 👥 v1.21.0 — every registered user listed right inside Messages, so coworkers find & add each other -->
+      <div class="card mt-4" id="messages-directory-card" style="display: none;">
+        <div class="card-padded">
+          <h3 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
+            <span style="font-size: 18px;">👥</span>
+            Find Coworkers on the App
+          </h3>
+          <p class="text-xs text-slate-400 mb-2">Everyone registered on Shift Tracker Pro shows here — tap ＋ Add to send a friend request (the 🔍 search by Gmail above still works too).</p>
+          <div id="messages-directory-list"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Chat Page -->
@@ -1287,7 +1305,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.20.0 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.21.0 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -1422,7 +1440,7 @@
           <details class="howto-item"><summary>🗓️ Calendar</summary><p><b>‹ ›</b> = previous / next month, <b>« »</b> = jump a whole year. ★ = Maltese public holiday (special pay 💶). Tap any day to see its shifts, notes and reminders.</p></details>
           <details class="howto-item"><summary>💶 Wage &amp; pay rules</summary><p>Settings → <b>💶 My Hourly Wage</b>: set your €/hour and tick what your workplace pays (Sunday ×2, holidays, rest days, overtime). Pay is then counted automatically on every shift. Home → <b>🧮 Pay Calc</b> = quick day-rate what-if maths. 🍔 <b>Unpaid break?</b> Tick it in any shift form (add / edit / auto) or right here in Pay Calc — those minutes come straight off the paid time, e.g. 12h − 30m = 11.5h paid. <b>Same break every day?</b> Settings → <b>💶 My Hourly Wage</b> → tick <b>🍔 Unpaid break</b> and set the minutes once — every NEW shift (⏱️ Start/Finish too, plus auto rules) starts with it ticked; you can still change or untick it per shift. 🗓️ <b>Payday tracking?</b> Settings → <b>🗓️ Payday</b> → tick <b>Enable</b> → pick your payday day (or set the exact next date). The dashboard then shows the <b>calendar month AND the payday period</b> (like 15 Aug → 14 Sep), and <b>📜 Salary History</b> keeps every finished period with its full maths — the normal monthly payslip stays exactly as it was.</p><p>💚 <b>Take-Home Calc 🇲🇹 2026 (NEW):</b> Home → My Earnings → <b>💶 Take-Home</b> — type your pay any way you know it (per hour / week / month / year), add ⏰ overtime (1.5× &amp; 2×), and tick the boxes: 🎂 born 1962 or later, 🎁 statutory bonus, ⚡ overtime special <b>15% tax</b> (the app checks if you qualify). Pick your 👪 tax status — all 7 official 2026 tables are inside, including the <b>NEW family tables</b> (married / parent with children: much less tax!). You instantly see what you <b>REALLY keep</b> per week / month / year after 🏛️ SSC and 🧾 tax, a 📏 minimum-wage checker (with your age!), a 🪄 <b>Use my real week</b> button that estimates this week's net from your actual logged shifts, and a 🏛️/🧑‍💼/🏢 job-type card (government vs agency vs private) explaining what you're entitled to. Everything is saved and syncs with your account. Numbers are close estimates from the official 2026 public tables (cfr.gov.mt · dier.gov.mt).</p></details>
           <details class="howto-item"><summary>📄 Payslips &amp; 📋 rosters</summary><p>My Earnings → <b>📄 Payslip</b>: the app BUILDS your payslip from your hours (⬇️ CSV for Excel, or 🖨️ Print → Save as PDF). My Earnings → <b>📎 Upload Payslip</b>: add the payslip your employer gives you (photo or PDF) so everything sits in one safe place. My Earnings → <b>📋 Upload Roster</b>: keep the roster your boss gives out (photo or PDF) — tag it like “17–30 August” and find it any time under <b>My Roster Files</b>.</p></details>
-          <details class="howto-item"><summary>💬 Co-workers &amp; chat</summary><p>👥 Co-workers → find a name → <b>Add Friend</b>. When someone adds <b>you</b>, the request waits for you at the TOP of 💬 Messages (and in 👥 Co-workers) with <b>Accept / Decline</b> — the red dot on Messages counts requests too. After accepting, chat in 💬 Messages — messages arrive even when their app is closed.</p></details>
+          <details class="howto-item"><summary>💬 Co-workers &amp; chat</summary><p>Under your chats in 💬 Messages sits the <b>👥 Find Coworkers list</b> — it shows EVERYONE registered on the app, with <b>＋ Add</b> next to their name, so coworkers find each other easily (the 🔍 search by Gmail on top still works too). When someone adds <b>you</b>, the request waits at the TOP of Messages with <b>Accept / Decline</b> — the red dot counts requests too. After accepting, chat away: 📷 tap ANY photo in a chat to open it BIG, then tap anywhere (or the ✕) to close it. Messages arrive even when their app is closed.</p></details>
           <details class="howto-item"><summary>🔔 Notifications</summary><p>Settings → <b>🔔 Push Notifications</b> → Enable → then 📣 Send test to try it. 🍏 iPhone: first Share → <b>Add to Home Screen</b>, then open the app from there.</p></details>
           <details class="howto-item"><summary>☁️ Backup &amp; new phone</summary><p>Everything saves to your account automatically (green ☁️ Cloud Backup card). New or lost phone: install the app, <b>sign in</b> — your wage, shifts, pay rules, notes and payslip files come back by themselves. 📱→📲</p></details>
         </div>
@@ -4492,7 +4510,7 @@
       const listEl = document.getElementById('message-list');
       listEl.innerHTML = messages.map(msg => `
         <div class="message ${msg.senderId === DB.user.id ? 'sent' : 'received'}">
-          ${msg.imageUrl ? `<img src="${msg.imageUrl}" style="max-width: 200px; max-height: 200px; border-radius: 8px; margin-bottom: 8px;">` : ''}
+          ${msg.imageUrl ? `<img src="${msg.imageUrl}" class="chat-photo" style="max-width: 200px; max-height: 200px; border-radius: 8px; margin-bottom: 8px; cursor: pointer;" onclick="openPhotoViewer(this.src)" title="Tap to view big 🔍">` : ''}
           ${msg.text ? `<p>${msg.text}</p>` : ''}
           <div class="message-time">${formatTime(msg.timestamp)}</div>
         </div>
@@ -4501,6 +4519,26 @@
       listEl.scrollTop = listEl.scrollHeight;
     }
 
+    // 📷 v1.21.0 — tap any chat photo to open it full-screen; tap anywhere (or ✕) to close
+    function openPhotoViewer(src) {
+      if (!src) return;
+      let v = document.getElementById('photo-viewer');
+      if (!v) {
+        v = document.createElement('div');
+        v.id = 'photo-viewer';
+        v.className = 'photo-viewer';
+        v.style.display = 'none';
+        v.innerHTML = '<button class="photo-close" aria-label="Close">✕</button><img alt="Chat photo">';
+        v.addEventListener('click', closePhotoViewer);
+        document.body.appendChild(v);
+      }
+      v.querySelector('img').src = src;
+      v.style.display = 'flex';
+    }
+    function closePhotoViewer() {
+      const v = document.getElementById('photo-viewer');
+      if (v) v.style.display = 'none';
+    }
     function sendMessage() {
       const input = document.getElementById('message-input');
       const text = input.value.trim();
@@ -6936,6 +6974,7 @@ async function refreshServerDirectory() {
   if (!r.ok) return;
   ONLINE.directory = r.data.users || [];
   if (currentPage === 'coworkers') refreshCoworkers();
+  if (currentPage === 'messages') renderMessagesDirectory(); // 👥 v1.21.0
 }
 
 function renderSocialUI(soft) {
@@ -7127,9 +7166,58 @@ function renderMessageRequests() {
   updateMessagesBadge();
 }
 
+// 👥 v1.21.0 — every registered user listed right inside Messages, so coworkers
+// find each other without typing emails. Buttons follow the relationship:
+// Accept (they asked you) → ＋ Add (strangers) → ⏳ Sent (you asked) → 💬 Chat (friends).
+function renderMessagesDirectory() {
+  const card = document.getElementById('messages-directory-card');
+  const list = document.getElementById('messages-directory-list');
+  if (!card || !list) return;
+  if (!ONLINE.active || !ONLINE.directory.length) { card.style.display = 'none'; list.innerHTML = ''; return; }
+  const score = u => {
+    if (ONLINE.incoming.some(r => r.user.id === u.id)) return 0;
+    if (ONLINE.friends.some(f => f.id === u.id)) return 3;
+    if (ONLINE.outgoing.some(r => r.user.id === u.id)) return 2;
+    return 1;
+  };
+  const users = ONLINE.directory.slice().sort((a, b) => {
+    const d = score(a) - score(b);
+    if (d) return d;
+    const on = ((!!ONLINE.presence[b.id] || b.online) ? 1 : 0) - ((!!ONLINE.presence[a.id] || a.online) ? 1 : 0);
+    if (on) return on;
+    return String(a.name).localeCompare(String(b.name));
+  });
+  list.innerHTML = users.map(u => {
+    const online = !!ONLINE.presence[u.id] || u.online;
+    const incoming = ONLINE.incoming.find(r => r.user.id === u.id);
+    const outgoing = ONLINE.outgoing.some(r => r.user.id === u.id);
+    const friend = ONLINE.friends.some(f => f.id === u.id);
+    let btn;
+    if (incoming) btn = `<button class="btn btn-success friend-btn" onclick="respondServerRequest('${incoming.id}', true)">Accept</button>`;
+    else if (friend) btn = `<button class="btn btn-primary friend-btn" onclick="startConversation('friend-${u.id}')">💬 Chat</button>`;
+    else if (outgoing) btn = `<button class="btn friend-btn" style="background: var(--slate-200); color: var(--slate-500);" disabled>⏳ Sent</button>`;
+    else btn = `<button class="btn btn-success friend-btn" onclick="requestServerFriend('${u.id}')">＋ Add</button>`;
+    return `
+      <div class="friend-row">
+        <div class="avatar">${avatarInnerHTML(u)}</div>
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-slate-900" style="font-size: 15px;">${escapeHtml(u.name)}</p>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="status-dot ${online ? 'status-online' : 'status-offline'}"></span>
+            <span class="text-xs font-bold" style="color: ${online ? 'var(--success)' : 'var(--slate-400)'};">${online ? 'Online' : 'Offline'}</span>
+            <span class="text-xs text-slate-400" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(u.email)}</span>
+          </div>
+        </div>
+        ${btn}
+      </div>`;
+  }).join('');
+  card.style.display = 'block';
+}
+
 function renderConversationsList() {
   const listEl = document.getElementById('conversations-list');
   if (!listEl) return;
+  renderMessagesDirectory(); // 👥 v1.21.0 — keep the list fresh on every messages paint
 
   // local Reminder Bot conversation stays fully local
   const botConvs = DB.conversations.filter(c => c.isBot);
@@ -7239,7 +7327,7 @@ function renderFriendThread(msgs) {
 
   listEl.innerHTML = msgs.map(msg => `
     <div class="message ${msg.fromId === myId ? 'sent' : 'received'}">
-      ${msg.imageUrl ? `<img src="${msg.imageUrl}" style="max-width: 200px; max-height: 200px; border-radius: 8px; margin-bottom: 8px;">` : ''}
+      ${msg.imageUrl ? `<img src="${msg.imageUrl}" class="chat-photo" style="max-width: 200px; max-height: 200px; border-radius: 8px; margin-bottom: 8px; cursor: pointer;" onclick="openPhotoViewer(this.src)" title="Tap to view big 🔍">` : ''}
       ${msg.text ? `<p>${escapeHtml(msg.text)}</p>` : ''}
       <div class="message-time">${formatTime(msg.timestamp)}</div>
     </div>`).join('');
@@ -7624,12 +7712,12 @@ navigateTo = function (page) {
   BASE_navigateTo(page);
   if (!ONLINE.active) return;
   if (page === 'coworkers') refreshServerDirectory();
-  if (page === 'messages') refreshServerConversations(true);
+  if (page === 'messages') { refreshServerConversations(true); refreshServerDirectory(); }
 };
 
 // ---------- go! ----------
 bootOnlineLayer();
 
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2c1a7223e1fb937',t:'MTc4Njg5NjAzNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2c6999e3d0fb56d',t:'MTc4Njk0NzkxMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
