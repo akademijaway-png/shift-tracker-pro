@@ -1305,7 +1305,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.21.0 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.21.1 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -1435,7 +1435,7 @@
             How to Use — Quick Guide
           </h3>
           <p class="text-xs text-slate-500 mb-3">Tap a topic to open it 👇</p>
-          <details class="howto-item"><summary>⏱️ Start &amp; stop a shift</summary><p>Home → big blue <b>START</b> button — the clock ticks and counts your € live. Tap it again (FINISH) when work ends. Forgot to press start? <b>My Earnings</b> → ＋ Add Shift.</p></details>
+          <details class="howto-item"><summary>⏱️ Start &amp; stop a shift</summary><p>Home → big blue <b>START</b> button — the clock ticks and counts your € live. Tap it again (FINISH) when work ends. Forgot to press start? <b>My Earnings</b> → ＋ Add Shift.Every finished shift lands in 📜 <b>History</b> — a long list opens instantly (newest 40); tap <b>⬇️ Show older shifts</b> at the bottom when you need more (keeps the app snappy ⚡).</p></details>
           <details class="howto-item"><summary>🔁 Auto shifts (set once, runs alone)</summary><p>Settings → <b>🔁 Add Shift (auto)</b> → pick your days → tap a quick time (like ☀️ 07–19) → Save. The clock starts &amp; stops <b>by itself</b> on those days. 🔵 blue dot on the calendar = auto shift planned. Tap the day → ✏️ change or 🗑️ remove just that day. <b>Repeat</b> choices: every week, this week only, <b>📅 next week only</b> (fills next Mon–Sun, then stops — perfect when the new roster just landed), or until the end of the month. 💶 <b>Different wage on different days?</b> In that same form, <b>wage for each day (optional)</b> — type a €/h next to each selected day that pays differently; empty days keep your normal rate, and everything is calculated with it automatically (payslips, payday, live counter). Break not paid? Tick 🍔 <b>Unpaid break</b> in that same form and set the minutes.</p></details>
           <details class="howto-item"><summary>🗓️ Calendar</summary><p><b>‹ ›</b> = previous / next month, <b>« »</b> = jump a whole year. ★ = Maltese public holiday (special pay 💶). Tap any day to see its shifts, notes and reminders.</p></details>
           <details class="howto-item"><summary>💶 Wage &amp; pay rules</summary><p>Settings → <b>💶 My Hourly Wage</b>: set your €/hour and tick what your workplace pays (Sunday ×2, holidays, rest days, overtime). Pay is then counted automatically on every shift. Home → <b>🧮 Pay Calc</b> = quick day-rate what-if maths. 🍔 <b>Unpaid break?</b> Tick it in any shift form (add / edit / auto) or right here in Pay Calc — those minutes come straight off the paid time, e.g. 12h − 30m = 11.5h paid. <b>Same break every day?</b> Settings → <b>💶 My Hourly Wage</b> → tick <b>🍔 Unpaid break</b> and set the minutes once — every NEW shift (⏱️ Start/Finish too, plus auto rules) starts with it ticked; you can still change or untick it per shift. 🗓️ <b>Payday tracking?</b> Settings → <b>🗓️ Payday</b> → tick <b>Enable</b> → pick your payday day (or set the exact next date). The dashboard then shows the <b>calendar month AND the payday period</b> (like 15 Aug → 14 Sep), and <b>📜 Salary History</b> keeps every finished period with its full maths — the normal monthly payslip stays exactly as it was.</p><p>💚 <b>Take-Home Calc 🇲🇹 2026 (NEW):</b> Home → My Earnings → <b>💶 Take-Home</b> — type your pay any way you know it (per hour / week / month / year), add ⏰ overtime (1.5× &amp; 2×), and tick the boxes: 🎂 born 1962 or later, 🎁 statutory bonus, ⚡ overtime special <b>15% tax</b> (the app checks if you qualify). Pick your 👪 tax status — all 7 official 2026 tables are inside, including the <b>NEW family tables</b> (married / parent with children: much less tax!). You instantly see what you <b>REALLY keep</b> per week / month / year after 🏛️ SSC and 🧾 tax, a 📏 minimum-wage checker (with your age!), a 🪄 <b>Use my real week</b> button that estimates this week's net from your actual logged shifts, and a 🏛️/🧑‍💼/🏢 job-type card (government vs agency vs private) explaining what you're entitled to. Everything is saved and syncs with your account. Numbers are close estimates from the official 2026 public tables (cfr.gov.mt · dier.gov.mt).</p></details>
@@ -3623,13 +3623,22 @@
       // Header
       const headerEl = document.getElementById('calendar-header');
       headerEl.innerHTML = '';
-      ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
-        headerEl.innerHTML += `<div class="calendar-header">${day}</div>`;
-      });
+        headerEl.innerHTML = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => `<div class="calendar-header">${day}</div>`).join(''); // ⚡ v1.21.1 one paint
       
       // Days
       const gridEl = document.getElementById('calendar-grid');
-      gridEl.innerHTML = '';
+      // ⚡ v1.21.1 — build ONE string and paint ONCE (the old per-day `innerHTML +=` re-parsed
+      // the whole grid 42 times → the biggest phone-stutter in the app)
+      let gridHtml = '';
+      // pre-index ONCE per paint (was: `DB.shifts.some(...)` scanning every shift for every day)
+      const shiftDays = new Set();    // finished shifts
+      const plannedDays = new Set();  // auto-planned future shifts
+      DB.shifts.forEach(s => {
+        if (s.finishTimestamp) shiftDays.add(formatDateISO(new Date(s.startTimestamp)));
+        else if (s.auto && s.date) plannedDays.add(s.date);
+      });
+      const noteDays = new Set(DB.notes.map(n => n.date));
+      const reminderDays = new Set(DB.reminders.map(r => r.date));
       
       const firstDay = new Date(year, month, 1).getDay();
       const lastDate = new Date(year, month + 1, 0).getDate();
@@ -3646,7 +3655,7 @@
         const pd = new Date(year, month - 1, day);
         const isSelected = selectedCalendarDate && isSameDate(pd, selectedCalendarDate);
         const pdClass = getMaltaHolidayName(pd) ? ' holiday' : (pd.getDay() === 0 ? ' sunday' : '');
-        gridEl.innerHTML += `<div class="calendar-day other-month${pdClass}${isSelected ? ' selected' : ''}" onclick="selectDay(this, ${year}, ${month - 1}, ${day})">${day}</div>`;
+        gridHtml += `<div class="calendar-day other-month${pdClass}${isSelected ? ' selected' : ''}" onclick="selectDay(this, ${year}, ${month - 1}, ${day})">${day}</div>`;
       }
       
       // Current month days
@@ -3661,13 +3670,10 @@
         const dayClass = holidayName ? ' holiday' : (isSunday ? ' sunday' : '');
         
         let indicators = '';
-        const hasShift = DB.shifts.some(s => {
-          const d = new Date(s.startTimestamp);
-          return d.getDate() === i && d.getMonth() === month && d.getFullYear() === year && s.finishTimestamp;
-        });
-        const hasNote = DB.notes.some(n => n.date === dateStr);
-        const hasReminder = DB.reminders.some(r => r.date === dateStr);
-        const hasPlanned = DB.shifts.some(s => s.auto && !s.finishTimestamp && s.date === dateStr);
+        const hasShift = shiftDays.has(dateStr);
+        const hasNote = noteDays.has(dateStr);
+        const hasReminder = reminderDays.has(dateStr);
+        const hasPlanned = plannedDays.has(dateStr);
         
         if (hasShift) indicators += '<span class="indicator shift"></span>';
         if (hasNote) indicators += '<span class="indicator note"></span>';
@@ -3679,7 +3685,7 @@
           : (pm.mode === 'rest1' || pm.mode === 'rest2') ? ' — ' + pm.label + ' ×' + pm.mult
           : '';
         
-        gridEl.innerHTML += `
+        gridHtml += `
           <div class="calendar-day ${isToday ? 'today' : ''}${isSelected ? ' selected' : ''}${dayClass}"${holidayName ? ` title="${holidayName}${tip}"` : ((isSunday || tip) ? ` title="${isSunday ? 'Sunday' : pm.label}${tip}"` : '')} onclick="selectDay(this, ${year}, ${month}, ${i})">
             ${holidayName ? '<span class="holiday-star">★</span>' : ''}${i}
             ${indicators ? '<div style="display:flex;gap:3px;position:absolute;bottom:4px;">' + indicators + '</div>' : ''}
@@ -3693,8 +3699,10 @@
         const nd = new Date(year, month + 1, i);
         const isSelected = selectedCalendarDate && isSameDate(nd, selectedCalendarDate);
         const ndClass = getMaltaHolidayName(nd) ? ' holiday' : (nd.getDay() === 0 ? ' sunday' : '');
-        gridEl.innerHTML += `<div class="calendar-day other-month${ndClass}${isSelected ? ' selected' : ''}" onclick="selectDay(this, ${year}, ${month + 1}, ${i})">${i}</div>`;
+        gridHtml += `<div class="calendar-day other-month${ndClass}${isSelected ? ' selected' : ''}" onclick="selectDay(this, ${year}, ${month + 1}, ${i})">${i}</div>`;
       }
+
+      gridEl.innerHTML = gridHtml; // ⚡ v1.21.1 — the ONE and only paint
     }
 
     function formatDateISO(date) {
@@ -4153,9 +4161,11 @@
 
     // ==================== HISTORY ====================
     let historyFilter = 'all';
+    let historyShowLimit = 40; // ⚡ v1.21.1 — paint the newest 40 instantly; older chunks load on demand
 
     function setHistoryFilter(filter) {
       historyFilter = filter;
+      historyShowLimit = 40; // ⚡ v1.21.1 — back to the newest chunk on filter change
       ['today', 'week', 'month', 'all'].forEach(f => {
         const btn = document.getElementById('filter-' + f);
         btn.style.background = f === filter ? 'var(--primary)' : '';
@@ -4207,7 +4217,10 @@
         return;
       }
       
-      listEl.innerHTML = filtered.map(shift => `
+      // ⚡ v1.21.1 — paint only the newest chunk; totals/count above still cover ALL matching shifts
+      const shownShifts = filtered.slice(0, historyShowLimit);
+      const hiddenShifts = filtered.length - shownShifts.length;
+      listEl.innerHTML = shownShifts.map(shift => `
         <div class="card p-4">
           <div class="flex justify-between items-start gap-3">
             <div class="flex-1 min-w-0">
@@ -4239,9 +4252,18 @@
             </div>
           </div>
         </div>
-      `).join('');
+      `).join('') + (hiddenShifts > 0 ? `
+        <div class="card p-4 text-center" style="cursor: pointer;" onclick="historyShowMore()">
+          <p class="font-bold text-primary" style="margin: 0;">⬇️ Show ${hiddenShifts > 100 ? '100 more' : ('the ' + hiddenShifts)} older shift${hiddenShifts === 1 ? '' : 's'}</p>
+          <p class="text-xs text-slate-400" style="margin: 4px 0 0;">${hiddenShifts} older hidden so the page stays fast ⚡</p>
+        </div>` : '');
     }
 
+    // ⚡ v1.21.1 — "show older" for long histories: +100 older shifts per tap, page stays quick
+    function historyShowMore() {
+      historyShowLimit += 100;
+      refreshHistory();
+    }
     // ==================== DELETE HISTORY ====================
     function confirmDeleteShift(shiftId) {
       const shift = DB.shifts.find(s => s.id === shiftId);
@@ -6973,8 +6995,21 @@ async function refreshServerDirectory() {
   const r = await apiFetch('/api/users');
   if (!r.ok) return;
   ONLINE.directory = r.data.users || [];
+  ONLINE.directoryLoaded = true; ONLINE.directoryAt = Date.now(); // ⚡ v1.21.1 freshness stamp
   if (currentPage === 'coworkers') refreshCoworkers();
   if (currentPage === 'messages') renderMessagesDirectory(); // 👥 v1.21.0
+}
+
+// ⚡ v1.21.1 — entering Messages no longer re-downloads the whole directory every
+// single time (extra fetch on every tab switch = one more thing slowing the paint).
+// Fresh for 60s; the 15s friends-poll keeps relationships current anyway.
+function refreshServerDirectorySmart() {
+  if (ONLINE.directoryLoaded && Date.now() - (ONLINE.directoryAt || 0) < 60000) {
+    if (currentPage === 'coworkers') refreshCoworkers();
+    if (currentPage === 'messages') renderMessagesDirectory();
+    return;
+  }
+  refreshServerDirectory();
 }
 
 function renderSocialUI(soft) {
@@ -7711,13 +7746,13 @@ const BASE_navigateTo = navigateTo;
 navigateTo = function (page) {
   BASE_navigateTo(page);
   if (!ONLINE.active) return;
-  if (page === 'coworkers') refreshServerDirectory();
-  if (page === 'messages') { refreshServerConversations(true); refreshServerDirectory(); }
+  if (page === 'coworkers') refreshServerDirectorySmart(); // ⚡ v1.21.1 freshness gate
+  if (page === 'messages') { refreshServerConversations(true); refreshServerDirectorySmart(); }
 };
 
 // ---------- go! ----------
 bootOnlineLayer();
 
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2c6999e3d0fb56d',t:'MTc4Njk0NzkxMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
