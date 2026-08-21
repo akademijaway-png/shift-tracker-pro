@@ -1320,7 +1320,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.22.0 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.22.1 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -6319,7 +6319,26 @@ async function enterOnlineMode(user) {
     DB.shifts = mergeById(DB.shifts, cloud.shifts).sort((a, b) => String(a.startTimestamp || a.date || '').localeCompare(String(b.startTimestamp || b.date || '')));
     DB.notes = mergeById(DB.notes, cloud.notes);
     DB.reminders = mergeById(DB.reminders, cloud.reminders);
-    DB.settings = Object.assign({ ringtone: 'classic', hourlyWage: null }, DB.settings, cloud.settings);
+    // 🛡️ v2.22.1 — SETTINGS CAN NEVER BE EATEN EITHER. The phone in your hand is the
+    // truth: local settings win the scalars, and 🔁 auto rules from BOTH sides are
+    // unioned by id — a rule that exists only in the cloud comes DOWN (nothing lost),
+    // and a cloud that lost its rules can never wipe the phone's again. (Nick's rules
+    // were eaten by `cloud.settings` overwriting his after a server restore.)
+    // Only a genuinely fresh device (never synced, no data) still adopts the cloud's
+    // settings wholesale, so a new phone still gets everything on first login.
+    const virginDevice = !localStorage.getItem('st_last_sync') && !localHasData;
+    const unionRules = (cloudRs, localRs) => {
+      const map = new Map();
+      (Array.isArray(cloudRs) ? cloudRs : []).forEach(r => { if (r && r.id != null) map.set(r.id, r); });
+      (Array.isArray(localRs) ? localRs : []).forEach(r => { if (r && r.id != null) map.set(r.id, r); }); // the phone in your hand wins a tie
+      return Array.from(map.values());
+    };
+    const cloudRules = cloud.settings && cloud.settings.autoRules;
+    const localRules = DB.settings && DB.settings.autoRules;
+    DB.settings = virginDevice
+      ? Object.assign({ ringtone: 'classic', hourlyWage: null }, DB.settings, cloud.settings)
+      : Object.assign({ ringtone: 'classic', hourlyWage: null }, cloud.settings, DB.settings);
+    DB.settings.autoRules = unionRules(cloudRules, localRules);
     DB.payslips = mergeById(DB.payslips, cloud.payslips);
     DB.rosters = mergeById(DB.rosters, cloud.rosters);
     pushStateToServer(); // reconcile: anything the cloud missed travels up right now
