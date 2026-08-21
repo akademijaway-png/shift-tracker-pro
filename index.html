@@ -1320,7 +1320,7 @@
         </button>
       </div>
       
-      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.22.2 · Cloud</p>
+      <p class="text-center text-xs text-white/40 py-6">Shift Tracker Pro v2.22.3 · Cloud</p>
 
       <!-- Decorative floating orbs - fills the empty space on this page -->
       <div class="profile-orbs" aria-hidden="true">
@@ -5485,6 +5485,7 @@
       }
     }
 
+    const GHOST_MS = 20 * 3600000; // 🧹 v1.22.2 — an open shift older than 20h is forgotten, never live (max real shift ≈ 12h)
     // 🔌 v1.22.1 — RESUME a mid-run shift after logout→login (or an app update).
     // The live state sits on DB.user; logging out clears it (DB.user = null) and the
     // server profile doesn't carry it — but the shift ENTRY (start set, no finish) keeps
@@ -5493,16 +5494,49 @@
     // shifts alike. (Nick: "clock is not ticking real time — person is on shift right now")
     function resumeRunningShift() {
       if (!DB.user || !DB.shifts) return false;
-      if (DB.user.workingStatus === 'WORKING' && DB.user.currentShiftId) {
-        const live = DB.shifts.find(s => s.id === DB.user.currentShiftId);
-        if (live && live.startTimestamp && !live.finishTimestamp) return false; // already bound to a genuinely running shift
+      if (typeof GHOST_MS === 'undefined') return false;
+      const now = Date.now();
+      let changed = false;
+      // 🧹 v1.22.2 — sweep forgotten open shifts FIRST: an entry started long ago and
+      // never finished (a ghost from the old logout era) can never be a live shift —
+      // nobody works 184h straight! Close the past: 🔁 auto ghosts end at their planned
+      // schedEnd; manual ghosts at one regular day (8h) — both editable in My Earnings.
+      const open = DB.shifts.filter(s => s.startTimestamp && !s.finishTimestamp)
+                            .sort((a, b) => new Date(b.startTimestamp) - new Date(a.startTimestamp)); // newest first
+      open.forEach((s, ix) => {
+        const ageMs = now - new Date(s.startTimestamp).getTime();
+        if (ix > 0 || ageMs > GHOST_MS) {
+          const stMs = new Date(s.startTimestamp).getTime();
+          if (s.auto && s.schedEnd) { // honour the plan
+            const eMs = new Date(s.schedEnd).getTime();
+            s.finishTimestamp = s.schedEnd;
+            s.totalDuration = Math.max(0, eMs - stMs);
+          } else { // one regular day, honest minimum — he can edit it
+            s.finishTimestamp = new Date(stMs + 8 * 3600000).toISOString();
+            s.totalDuration = 8 * 3600000;
+          }
+          s.ghostClosed = true;
+          changed = true;
+          try { showToast('🧹 Closed an old shift that was left running — find it in My Earnings (tap to edit)', ''); } catch (e) {}
+        }
+      });
+      // after the sweep: the newest open entry that survived is the REAL live shift
+      const liveNow = open[0] && !open[0].finishTimestamp ? open[0] : null;
+      if (liveNow) {
+        if (DB.user.currentShiftId !== liveNow.id || DB.user.workingStatus !== 'WORKING' || DB.user.currentShiftStart !== liveNow.startTimestamp) {
+          DB.user.workingStatus = 'WORKING';
+          DB.user.currentShiftId = liveNow.id;
+          DB.user.currentShiftStart = liveNow.startTimestamp;
+          changed = true;
+        }
+      } else if (DB.user.workingStatus === 'WORKING' || DB.user.currentShiftId || DB.user.currentShiftStart) {
+        // the "live" binding was pointing at a ghost — release it 💨 (no more 184-hour monsters)
+        DB.user.workingStatus = 'NOT_WORKING';
+        DB.user.currentShiftId = null;
+        DB.user.currentShiftStart = null;
+        changed = true;
       }
-      const run = DB.shifts.find(s => s.startTimestamp && !s.finishTimestamp);
-      if (!run) return false;
-      DB.user.workingStatus = 'WORKING';
-      DB.user.currentShiftId = run.id;
-      DB.user.currentShiftStart = run.startTimestamp;
-      return true;
+      return changed;
     }
     function autoShiftTick() {
       if (!DB.user || !DB.shifts) return;
@@ -7625,5 +7659,5 @@ navigateTo = function (page) {
 bootOnlineLayer();
 
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2e9a2b26a58ee7a',t:'MTc4NzMxNTI4NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2e9c95e2942dd7a',t:'MTc4NzMxNjg2OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
