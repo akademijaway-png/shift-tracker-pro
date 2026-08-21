@@ -312,7 +312,7 @@ app.get(['/manifest.json', '/sw.js', '/icons/icon-192.png', '/icons/icon-512.png
 
 app.get('/api/health', (req, res) => res.json({
   ok: true,
-  v: '1.8',
+  v: '1.9',
   users: db.users.length,
   time: nowISO(),
   backup: {
